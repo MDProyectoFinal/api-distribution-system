@@ -1,0 +1,41 @@
+Controlador de usuario
+- Guardar usuario (LISTO)
+- Loguear usuario (LISTO)
+- Actualizar usuario (LISTO)
+- Subir/Actualizar imagen o avatar del usuario (LISTO)
+- Obtener imagen o avatar del usuario (LISTO)
+- Eliminar usuario (LISTO)
+- Obtener usuarios (LISTO)
+- Obtener usuario (LISTO)
+
+Controlador de Productos
+- Guardar Productos (incluir metodo de guardar imagen acá no?)
+- Actualizar Productos (precio, nombre, etc)
+- Eliminar Productos
+- Obtener Productos
+- Obtener Producto
+- Actualizar inventario
+
+Controlador de Compras
+- Guardar o registrar Compras
+- Obtener Compras
+- Obtener Compra
+- Cancelar/Eliminar Compras
+- Modificar Compra (NO PERMITIDO)
+
+Controlador de proveedores
+- Registrar proveedor (tener siempre un usuario creado??)
+- Eliminar/Dar baja lógica del proveedor
+- Actualizar proveedor (direccion, razon social, telefono, etc)
+- Obtener proveedor
+- Obtener proveedores
+
+Controlador de facturacion
+- Registrar facturacion
+- Generar factura de Compra
+- Obtener facturas o comprobantes de facturacion
+- Validar facturacion
+
+Controlador de pedidos
+- Registrar pedidos
+- Eliminar/Cancelar pedidos

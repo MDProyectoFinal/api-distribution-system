@@ -1,0 +1,1 @@
+Es un fichero que va a tener ciertos métodos donde vamos a tener funciones que hacen algo
