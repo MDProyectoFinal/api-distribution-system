@@ -7,8 +7,7 @@
     "dev": "nodemon index.js",
     "start": "node index.js",
     "test": "echo \"Error: no test specified\" && exit 1",
-    "debug": "nodemon --inspect persona.js",
-    "vercel-build": "echo mensajevercelbuild"
+    "debug": "nodemon --inspect persona.js"
   },
   "author": "Matias Clement y Diego Barberis",
   "license": "MIT",
