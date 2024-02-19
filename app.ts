@@ -16,7 +16,7 @@ var persona_rutas = require('./rutas/persona');
 
 
 // Configurar cabeceras http (Para evitar controles de aceso)
-app.use( ( req, res, next ) => {
+app.use( ( req: any, res: any, next: any ) => {
 
     res.setHeader('Access-Control-Allow-Origin', '*'); // Permitimos acceso a todos los dominios
     res.setHeader('Access-Control-Allow-Headers', 'Authorization, X-API-KEY, Origin, X-Requested-With, Content-Type, Accept, Access-Control-Allow-Request-Method');    
@@ -24,7 +24,6 @@ app.use( ( req, res, next ) => {
     res.setHeader('Allow', 'GET, POST, OPTIONS, PUT, DELETE');
     
     next();
-
 });
 
 // Rutas base

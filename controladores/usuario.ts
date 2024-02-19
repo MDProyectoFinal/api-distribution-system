@@ -1,5 +1,7 @@
 'use strict'
 
+import { IUsuario } from "../modelos/usuario";
+
 var fs = require('fs');
 var path = require('path');
 var bcrypt = require('bcrypt-nodejs');
@@ -9,9 +11,11 @@ var Persona = require('../modelos/persona');
 var jwt = require('../servicios/jwt');
 
 const usuario = require('../modelos/usuario');
-const { debug } = require('console');
+var { debug } = require('console');
 
-async function pruebasControlador( req, res ){
+const mongoose = require('mongoose');
+
+async function pruebasControlador( req:any, res:any ){
 
     console.log(res);
 
@@ -20,16 +24,18 @@ async function pruebasControlador( req, res ){
     });
 }
 
-async function guardarUsuario( req, res ){
+async function guardarUsuario( req:any, res:any ){
     
     var usuario = new Usuario();
-    var [persona = null, nombre_usuario = null, clave = null, email = null, rol = null, imagen = null, fecha_registro = null, fecha_ultimo_inicio_sesion = null ] = [null, null, null, null, null, null, null, null];
-    
-    debugger;
-
+    var [persona = null, nombre_usuario = null, clave = null, email = null, rol = null, imagen = null, fecha_registro = new Date(), fecha_ultimo_inicio_sesion = new Date() ] = [null, null, null, null, null, null, null, null];
+        
+    debugger;        
+    let fecha_actual: Date | null = new Date();
+   
     // Vemos si viene por el body (metodo directo) o si viene desde el "Guardar Persona"
     if (typeof req.body === 'undefined' || req.body === '') {
         // Si viene desde el método GuardarPersona
+        usuario._id = new mongoose.Types.ObjectId();
         persona = req.persona;
         nombre_usuario = req.nombre_usuario;
         clave = req.clave;
@@ -40,15 +46,14 @@ async function guardarUsuario( req, res ){
         fecha_ultimo_inicio_sesion = req.fecha_ultimo_inicio_sesion;
     }else{
         // Si el método es llamado directo. Desde Postman por ejemplo
+        usuario._id = new mongoose.Types.ObjectId();
         persona = req.body.persona;
         nombre_usuario = req.body.nombre_usuario;
         clave = req.body.clave;
         email = req.body.email;
         rol = req.body.rol;
-
-        const fechaActual = new Date();
-        fecha_registro = fechaActual;
-        fecha_ultimo_inicio_sesion = fechaActual;
+        fecha_registro = fecha_actual;
+        fecha_ultimo_inicio_sesion = fecha_actual;
     }
 
     // PARA TEST
@@ -77,7 +82,7 @@ async function guardarUsuario( req, res ){
             
             // Encriptar contraseña y guardar datos
             const claveHash = new Promise(async (resolve, reject) => {
-                await bcrypt.hash( usuario.clave, null, null, async function(err, hash) {
+                await bcrypt.hash( usuario.clave, null, null, async function(err:any, hash:any) {
                     if (err) {                        
                         reject(err);
                     } else {
@@ -102,7 +107,7 @@ async function guardarUsuario( req, res ){
                         // res.status(200).send({ usuario: usuarioGuardado });
                         return usuarioGuardado;
                     }else{
-                        console.log({ errorGuardado: error, success: false, message: 'Error al guardar el usuario' }); 
+                        console.log({ success: false, message: 'Error al guardar el usuario' }); 
                         throw new Error( 'Error al guardar el usuario (del metodo save)' );                                             
                         // res.status(500).send({ message: 'Error al guardar el usuario'}); //.end()
                     }
@@ -123,7 +128,7 @@ async function guardarUsuario( req, res ){
 
 }
 
-async function loguearUsuario( req, res ){
+async function loguearUsuario( req:any, res:any ){
     
     var params = req.body; // Con bodyParser convierte los objetos a JSON
 
@@ -140,7 +145,7 @@ async function loguearUsuario( req, res ){
             res.status(404).send({ message: 'Usuario no existe' });
         }else{
             // Comprobar la contraseña
-            bcrypt.compare( clave, usuarioEncontrado[0].clave, function( err, check ) {
+            bcrypt.compare( clave, usuarioEncontrado[0].clave, function( err:any, check:any ) {
                 if( check ){
                     // Devolver los datos del usuario logueado                        
                     if( params.gethash ){
@@ -169,19 +174,17 @@ async function loguearUsuario( req, res ){
     }
 }
 
-async function actualizarUsuario( req, res ){
+async function actualizarUsuario( req:any, res:any ){
     
     var userId = req.params.id; // de la URL viene
     // var personaId = req.params.persona;
     var update = req.body;
-
 
     if( userId != req.usuario.sub ){
         return res.status(500).send({ message: 'No tienes permisos para actualizar este usuario' });
     }
 
     try {
-        
         // Actualizamos el "usuario"
         const usuarioEncontrado = await Usuario.findByIdAndUpdate( userId, update );    
         const usuarioActualizado = update;
@@ -209,20 +212,21 @@ async function actualizarUsuario( req, res ){
     }
 }
 
-function actualizarImagen( req, res ){
+function actualizarImagen( req:any, res:any ){
     var userId = req.params.id;
     var file_name = 'No subido...';
     
     if( req.files ){
         var file_path = req.files.imagen.path; // Ej.: upload\users\C1K_GEcvY93cdFw-PvB_7kwi.jpg
         
-        var file_split = file_path.split('\\'); // Devuelve un arrat, usando la Barra(\) como separacion
-        var file_name = file_split[2];
+        var file_split = file_path.split('\\'); // Devuelve un arrat, usando la Barra(\) como separacion        
+        //VER?
+        var file_name: string = file_split[2];
         
         var file_ext_split = file_name.split('\.');
         var file_ext = file_ext_split[1];
 
-        console.log(file_ext);
+        // console.log(file_ext);
         
         if( file_ext == 'jpg' || file_ext == 'png' || file_ext == 'gif' ){
             
@@ -233,10 +237,10 @@ function actualizarImagen( req, res ){
                     { $set: { imagen: file_name.toString() } },
                     { new: true }
                 )
-                .then((updatedUser) => {
+                .then((updatedUser: any) => {
                     return res.status(200).send({ imagen: file_name, user: updatedUser, message: 'Imagen del usuario actualizada correctamente,' }); 
                 })
-                .catch((error) => {
+                .catch((error: any) => {
                     return res.status(500).send({ message: 'Error al actualizar la imagen del usuario' + error });
                 });
 
@@ -253,7 +257,7 @@ function actualizarImagen( req, res ){
 }
 
 
-function obtenerArchivoImagen(req, res){
+function obtenerArchivoImagen(req:any, res:any){
     var imageFile = req.params.archivoImagen;
 
     var path_file = './subidas/usuarios/' + imageFile;
@@ -267,7 +271,7 @@ function obtenerArchivoImagen(req, res){
 
 }
 
-async function eliminarUsuario( req, res )
+async function eliminarUsuario( req:any, res:any )
 {
     try {
         var userId = req.params.id;
@@ -283,7 +287,7 @@ async function eliminarUsuario( req, res )
         // const imagenEliminada = await imagen.deleteMany({ _userId: { $in: usuario.imagen } });
         const usuarioEliminado = await Usuario.findByIdAndRemove( userId );    
          
-        console.log({ usuarioEliminado });
+        // console.log({ usuarioEliminado });
 
         if( usuarioEliminado == null ){
             return res.status(404).send({ message: 'No se ha podido eliminar el usuario'});
@@ -298,15 +302,15 @@ async function eliminarUsuario( req, res )
     }    
 }
 
-async function obtenerUsuarios( req, res ){
-
+async function obtenerUsuarios( req:any, res:any ){
+    var paginacion = 0;
     if(req.params.paginacion){
-        var paginacion = req.params.paginacion
+        paginacion = req.params.paginacion
     }else{
-        var paginacion = 1
+        paginacion = 1
     }
 
-    var paginacion = req.params.paginacion;
+    paginacion = req.params.paginacion;
     var itemsPorPagina = 5;
     var params = req.body; // Con bodyParser convierte los objetos a JSON
 
@@ -315,7 +319,7 @@ async function obtenerUsuarios( req, res ){
         // const usuariosEncontrados = await Usuario.find().sort('nombre_usuario').paginate(paginacion, itemsPorPagina);
         const usuariosEncontrados = await Usuario.find().sort('nombre_usuario');
 
-        console.log( usuariosEncontrados );
+        //console.log( usuariosEncontrados );
         
         if( usuariosEncontrados.length == 0 ){
             res.status(404).send({ message: 'No hay usuarios registrados' });
@@ -328,14 +332,14 @@ async function obtenerUsuarios( req, res ){
     }
 }
 
-async function obtenerUsuario( req, res ){
+async function obtenerUsuario( req:any, res:any ){
 
     var userId = req.params.id; // de la URL viene
     var update = req.body;
-    console.log(userId);
+    //console.log(userId);
     try {
         const usuarioEncontrado = await Usuario.find({ "_id": userId });
-        console.log( usuarioEncontrado );
+        //console.log( usuarioEncontrado );
 
         if( usuarioEncontrado.length == 0 ){
             res.status(404).send({ message: 'Usuario no existe' });

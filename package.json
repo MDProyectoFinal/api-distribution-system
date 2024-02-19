@@ -2,12 +2,15 @@
   "name": "trabajo-final",
   "version": "1.0.0",
   "description": "Proyecto Final o Tesis de Ingenieria en Sistemas de Informacion",
-  "main": "index.js",
+  "main": "index.ts",
   "scripts": {
-    "dev": "nodemon index.js",
-    "start": "node index.js",
+    "dev": "node dist/index.js",
+    "dev:prueba": "tsnd --respawn app.ts",
+    "dev2": "node index.ts",
     "test": "echo \"Error: no test specified\" && exit 1",
-    "debug": "nodemon --inspect persona.js"
+    "debug": "nodemon --inspect persona.ts",
+    "build": "rimraf ./dist && tsc",
+    "start": "npm run build && node dist/index.js"
   },
   "author": "Matias Clement y Diego Barberis",
   "license": "MIT",
@@ -26,7 +29,11 @@
     "mongoose-paginate-v2": "^1.7.1"
   },
   "devDependencies": {
+    "@types/node": "^20.11.2",
     "node-inspect": "^2.0.0",
-    "nodemon": "^2.0.22"
+    "nodemon": "^2.0.22",
+    "rimraf": "^5.0.5",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.3.3"
   }
 }

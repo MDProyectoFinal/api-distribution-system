@@ -1,25 +1,27 @@
 'use strict'
 
+import { IPersona } from "../modelos/persona";
+
 var fs = require('fs');
 var path = require('path');
-const moment = require('moment');
+var moment = require('moment');
 
 var Persona = require('../modelos/persona');
 var Usuario = require('../modelos/usuario');
 
 // const mongoose = require('mongoose'); // Si estás utilizando require
 
-const { guardarUsuario } = require('./usuario');
-const { debug } = require('console');
+var { guardarUsuario } = require('./usuario');
+var { debug } = require('console');
 // const { params } = require('../app');
 
-function pruebasPersona( req, res ){
+function pruebasPersona( req:any, res:any ){
     res.status(200).send({
         message: 'Probando una acción del controlador de personas del api rest con Node y MongoDB'
     });
 }
 
-function pruebaCodigoDev( req, res ){
+function pruebaCodigoDev( req:any, res:any ){
     // Obtener la fecha actual
     const fechaActual = moment();
     const fecha = new Date();
@@ -35,7 +37,7 @@ function pruebaCodigoDev( req, res ){
 }
 
 // Llamar dicho metodo desde el guardar usuario
-async function guardarPersona( req, res ){
+async function guardarPersona( req:any, res:any ){
     
     var personaGuardada = null;
 
@@ -76,9 +78,8 @@ async function guardarPersona( req, res ){
 
                 // ** Guardamos el usuario asociado **
                 const usuarioGuardado = await guardarUsuario( usuario, res );                
-                console.log(usuarioGuardado);
+                // console.log(usuarioGuardado);
                 
-                debugger;
                 if(usuarioGuardado && personaGuardada){
                     res.status(200).send({ persona: personaGuardada, usuario: usuarioGuardado });
                 }
@@ -101,14 +102,14 @@ async function guardarPersona( req, res ){
     }
 }
 
-async function obtenerPersona( req, res ){
+async function obtenerPersona( req:any, res:any ) : Promise<IPersona|undefined>{
 
     var personaId = req.params.id; // de la URL viene
     var update = req.body;
     
     try {
         const personaEncontrada = await Persona.find({ "_id": personaId });
-        console.log( personaEncontrada );
+        // console.log( personaEncontrada );
 
         if( personaEncontrada.length == 0 ){
             res.status(404).send({ message: 'Persona no existe' });
@@ -121,12 +122,12 @@ async function obtenerPersona( req, res ){
     }
 }
 
-async function actualizarPersona( req, res ){
+async function actualizarPersona( req:any, res:any ){
     
     var personaId = req.params.id; // de la URL viene
     var update = req.body;
 
-    debugger;
+    var userId = ''; // revisar esto!!!!!!!!
 
     if( personaId != req.usuario.sub ){
         return res.status(500).send({ message: 'No tienes permisos para actualizar este usuario' });
