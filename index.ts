@@ -11,7 +11,7 @@ mongoose.set('strictQuery', false);
 //mongoose.connect('mongodb://0.0.0.0:27017/rosario_snack').then( 
 
 // Conectar Mongo DB Atlas Free Online
-mongoose.connect(process.env.MONGO_URL_LOCAL).then( 
+mongoose.connect(process.env.MONGO_URL).then( 
     (res: any) => {
         console.log(`La conexión a la base de datos está funcionando correctamente..`);  
         
