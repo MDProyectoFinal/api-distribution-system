@@ -22,23 +22,6 @@ mongoose.connect(process.env.MONGO_URL_LOCAL).then(
         await app.listen(port, function(){
             console.log('Servidor del api rest de proyecto final escuchando en ' + process.env.URL_ACTUAL + ':' + process.env.PORT );
         })
-
-        // Registro de LOGs de la conexión
-        try {
-            // Registramos un log de de conexión exitosa de la BD
-            const newLog: ILog = {
-                mensaje: 'La conexión a la base de datos está funcionando correctamente..',
-                origen: 'index.ts',
-                nivel: LogNivelImportancia.low,
-                creacion: new Date()
-            };
-            await LogController.guardarLog(newLog);
-            // await LogController.obtenerLogs(); -> Para obtener todos. Luego borrar esta linea!!
-
-        } catch (error) {
-            console.error('Error al guardar el log:', error);
-        }
-
     },
     (err: any) => console.error(`Ha habido un error: ${err}`),
 );

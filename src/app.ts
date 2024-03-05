@@ -13,23 +13,24 @@ app.use(bodyParser.json()); // Convierte a objeto json los datos o peticiones q 
 // Cargar rutas
 var usuario_rutas = require('./rutas/usuario');
 var persona_rutas = require('./rutas/persona');
+const rutaTipoProducto = require('./rutas/rutaTipoProducto')
 
 
 // Configurar cabeceras http (Para evitar controles de aceso)
 app.use( ( req: any, res: any, next: any ) => {
 
     res.setHeader('Access-Control-Allow-Origin', '*'); // Permitimos acceso a todos los dominios
-    res.setHeader('Access-Control-Allow-Headers', 'Authorization, X-API-KEY, Origin, X-Requested-With, Content-Type, Accept, Access-Control-Allow-Request-Method');    
+    res.setHeader('Access-Control-Allow-Headers', 'Authorization, X-API-KEY, Origin, X-Requested-With, Content-Type, Accept, Access-Control-Allow-Request-Method');
     res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS, PUT, DELETE');
     res.setHeader('Allow', 'GET, POST, OPTIONS, PUT, DELETE');
-    
+
     next();
 });
 
 // Rutas base
-app.use('/api', usuario_rutas); 
+app.use('/api', usuario_rutas);
 app.use('/api', persona_rutas);
-
+app.use('/api/tiposProductos', rutaTipoProducto.router);
 // app.get('/prueba', function(req, res){
 //     res.status(200).send({ message: 'Bienvenido a la app del Proyecto Final de ISI' })
 // });
