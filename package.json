@@ -10,7 +10,8 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "debug": "nodemon --inspect persona.ts",
     "build": "rimraf ./dist && tsc",
-    "start": "nodemon"
+    "start": "nodemon",
+    "start:prod": "npm run build && node dist/index.js"
   },
   "author": "Matias Clement y Diego Barberis",
   "license": "MIT",
