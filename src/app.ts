@@ -14,6 +14,7 @@ app.use(bodyParser.json()); // Convierte a objeto json los datos o peticiones q 
 var usuario_rutas = require('./rutas/usuario');
 var persona_rutas = require('./rutas/persona');
 const rutaTipoProducto = require('./rutas/rutaTipoProducto')
+const rutaProducto = require('./rutas/rutaProducto')
 
 
 // Configurar cabeceras http (Para evitar controles de aceso)
@@ -31,6 +32,7 @@ app.use( ( req: any, res: any, next: any ) => {
 app.use('/api', usuario_rutas);
 app.use('/api', persona_rutas);
 app.use('/api/tiposProductos', rutaTipoProducto.router);
+app.use('/api/productos', rutaProducto.router);
 // app.get('/prueba', function(req, res){
 //     res.status(200).send({ message: 'Bienvenido a la app del Proyecto Final de ISI' })
 // });

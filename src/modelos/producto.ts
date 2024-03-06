@@ -9,7 +9,7 @@ const productoSchema = new mongoose.Schema({
     imagen: { type: String },
     precio_unitario: { type: Number, required: true },
     stock: { type: Number, required: true, default: 0 },
-    categoria: { type: String, required: true }
+    tipoProducto: { type: mongoose.Types.ObjectId, required: true }
 });
 
 export const ProductoModel = mongoose.model('Producto', productoSchema);
