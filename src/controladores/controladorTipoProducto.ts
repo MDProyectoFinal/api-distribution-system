@@ -1,6 +1,5 @@
 import { TipoProductoModel } from './../modelos/tipoProducto'
 import express from 'express'
-import mongoose from 'mongoose'
 
 export const recuperarTodos = async (
   req: express.Request,
