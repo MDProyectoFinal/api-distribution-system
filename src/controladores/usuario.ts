@@ -1,19 +1,18 @@
 'use strict'
 
-import { IUsuario } from "../modelos/usuario";
-
 var fs = require('fs');
 var path = require('path');
 var bcrypt = require('bcrypt-nodejs');
-var Usuario = require('../modelos/usuario');
+
+// import Usuario from '../../src/modelos/usuario';
+// var Usuario = require('../modelos/usuario')
+
+import Usuario from '../../src/modelos/usuario';
 var Persona = require('../modelos/persona');
 
 var jwt = require('../servicios/jwt');
 
-const usuario = require('../modelos/usuario');
-var { debug } = require('console');
-
-const mongoose = require('mongoose');
+import mongoose from 'mongoose';
 
 async function pruebasControlador( req:any, res:any ){
 
@@ -129,7 +128,7 @@ async function guardarUsuario( req:any, res:any ){
 }
 
 async function loguearUsuario( req:any, res:any ){
-    
+    debugger;
     var params = req.body; // Con bodyParser convierte los objetos a JSON
 
     var email = params.email;

@@ -1,12 +1,7 @@
 'use strict'
 
-import { Schema } from "mongoose";
-//var mongoose = require('mongoose');
+import mongoose, { Schema, Document, Model } from 'mongoose';
 
-import mongoose from 'mongoose';
-
-
-// VER SI ES NECESARIO!!!
 export interface IUsuario extends Document {
     _id: any, // Ver si BORRARLO. OJO!!
     persona: String, // { type: Schema.ObjectId, ref: 'Persona' },
@@ -45,7 +40,7 @@ const UsuarioSchema: Schema = new Schema({
 //     fecha_ultimo_inicio_sesion: Date       
 // })
 
-export const Usuarioodel = mongoose.model('Usuario', UsuarioSchema);
+const UsuarioModel = mongoose.model('Usuario', UsuarioSchema);
+export default UsuarioModel;
 
-// module.exports = mongoose.model('Usuario', UsuarioSchema);
 
