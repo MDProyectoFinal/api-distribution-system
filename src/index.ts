@@ -20,7 +20,7 @@ mongoose.connect(process.env.MONGO_URL_LOCAL).then(
         console.log(`La conexión a la base de datos está funcionando correctamente..`);
 
         await app.listen(port, function(){
-            console.log('Servidor del api rest de proyecto final escuchando en ' + process.env.URL_ACTUAL + ':' + process.env.PORT );
+            console.log(`Servidor del api rest de proyecto final escuchando en ${process.env.URL_ACTUAL}:${process.env.PORT} `);
         })
 
         // Registro de LOGs de la conexión

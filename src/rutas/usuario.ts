@@ -9,7 +9,7 @@ var md_aute = require('../middlewares/autenticacion');
 var multipart = require('connect-multiparty'); // sirve para la subida de imagenes o ficheros
 var md_subida = multipart({ uploadDir: './subidas/usuarios' }); // Acá subimos todas las imagens de usuarios
 
-api.get('/probando-controlador', md_aute.asegurarAutenticacion, UsuarioController.pruebasControlador);
+api.get('/probando-controlador', UsuarioController.pruebasControlador);
 api.post('/guardar-usuario', UsuarioController.guardarUsuario);
 api.post('/loguear-usuario', UsuarioController.loguearUsuario);
 api.put('/actualizar-usuario/:id', md_aute.asegurarAutenticacion, UsuarioController.actualizarUsuario);
