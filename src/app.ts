@@ -2,7 +2,8 @@
 
 require('dotenv').config();
 
-var express = require('express');
+import express from 'express';
+//var express = require('express');
 var bodyParser = require('body-parser');
 
 // Configurar la aplicación
