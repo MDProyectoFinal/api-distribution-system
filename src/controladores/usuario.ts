@@ -5,9 +5,7 @@ var path = require('path');
 var bcrypt = require('bcrypt-nodejs');
 
 // import Usuario from '../../src/modelos/usuario';
-// var Usuario = require('../modelos/usuario')
-
-import Usuario from '../../src/modelos/usuario';
+var Usuario = require('../modelos/usuario')  //('../modelos/usuario')
 var Persona = require('../modelos/persona');
 
 var jwt = require('../servicios/jwt');
