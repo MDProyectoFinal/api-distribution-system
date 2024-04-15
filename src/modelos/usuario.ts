@@ -40,7 +40,7 @@ const UsuarioSchema: Schema = new Schema({
 //     fecha_ultimo_inicio_sesion: Date       
 // })
 
-const UsuarioModel = mongoose.model('Usuario', UsuarioSchema);
+export const UsuarioModel = mongoose.model('Usuario', UsuarioSchema);
 export default UsuarioModel;
 
 
