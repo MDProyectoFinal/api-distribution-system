@@ -3,7 +3,7 @@
 import mongoose, { Schema, Document, Model } from 'mongoose';
 
 export interface IUsuario extends Document {
-    _id: any, // Ver si BORRARLO. OJO!!
+    //_id: any, // Ver si BORRARLO. OJO!!
     persona: String, // { type: Schema.ObjectId, ref: 'Persona' },
     nombre_usuario: String,    
     clave: String,  
@@ -15,7 +15,7 @@ export interface IUsuario extends Document {
 }
 
 const UsuarioSchema: Schema = new Schema({
-    _id: { type: Schema.ObjectId, require: true },
+    //_id: { type: mongoose.Schema.Types.ObjectId, require: true },
     persona: { type: String, require: true }, // { type: Schema.ObjectId, ref: 'Persona' },
     nombre_usuario: { type: String, require: true },    
     clave: { type: String, require: true },  
