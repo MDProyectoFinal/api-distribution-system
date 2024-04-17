@@ -337,7 +337,17 @@ async function obtenerUsuario( req:any, res:any ){
     var update = req.body;
     //console.log(userId);
     try {
-        const usuarioEncontrado = await UsuarioModel.find({ "_id": userId });
+
+        // Asegúrate de que userId sea una cadena de 24 caracteres hexadecimales. Porque sin mandamos "1" por ejemplo explota
+        if (!/^[0-9a-fA-F]{24}$/.test(userId)) {
+            // Maneja el caso en el que userId no tiene el formato correcto
+            // Por ejemplo, lanza un error o maneja la situación de manera adecuada
+
+            throw new Error( 'El "UserId" no posee el formato correcto (ObjectId) para su búsqueda' ); 
+        }
+
+        const userIdObject = new mongoose.Types.ObjectId(userId);
+        const usuarioEncontrado = await UsuarioModel.find({ "_id": userIdObject });
         //console.log( usuarioEncontrado );
 
         if( usuarioEncontrado.length == 0 ){
@@ -346,8 +356,8 @@ async function obtenerUsuario( req:any, res:any ){
             return res.status(200).send({ user: usuarioEncontrado, message: 'Usuario encontrado' });
         }
 
-    } catch (error) {
-        return res.status(500).send({ message: 'Error al obtener el usuario' });
+    } catch (error: any) {
+        return res.status(500).send({ message: 'Error al obtener el usuario', error: error.message });
     }
 }
 
