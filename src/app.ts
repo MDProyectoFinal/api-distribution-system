@@ -15,7 +15,7 @@ var usuario_rutas = require('./rutas/usuario');
 var persona_rutas = require('./rutas/persona');
 const rutaTipoProducto = require('./rutas/rutaTipoProducto')
 const rutaProducto = require('./rutas/rutaProducto')
-const rutaPedidos = require('./rutas/rutaPedidosUsuarios')
+const rutaPedidos = require('./rutas/rutaPedidos')
 
 
 // Configurar cabeceras http (Para evitar controles de aceso)

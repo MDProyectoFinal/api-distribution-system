@@ -4,9 +4,24 @@ import { UsuarioModel } from '../modelos/usuario'
 import { ProductoModel } from '../modelos/producto'
 import { isValidObjectId } from 'mongoose'
 
-export const recuperarTodos = async (req: express.Request, res: express.Response) => {}
+export const recuperarTodos = async (req: express.Request, res: express.Response) => {
 
-export const recuperarPorId = async (req: express.Request, res: express.Response) => {}
+    const pedidos = await PedidoModel.find()
+    return res.status(200).json(pedidos)
+}
+
+export const recuperarPorId = async (req: express.Request, res: express.Response) => {
+
+    const { idPedido } = req.params
+    console.log(idPedido)
+    const pedido = await PedidoModel.findById(idPedido)
+
+    if(!pedido){
+        return res.status(404).json("El pedido no existe")
+    }
+
+    return res.status(200).json(pedido)
+}
 
 export const insertarPedido = async (req: express.Request, res: express.Response) => {
   const { idUsuario, productos } = req.body
