@@ -1,12 +1,18 @@
 import express from 'express'
+import { crearUrlPaginacion, MAX_TAMAÑO_PAGINA, MetaDataPaginacion, TipoRecursoUri } from './../paginacion/index'
+import ParametrosConsultaProducto from './../paginacion/parametrosConsultaProductos'
 import { ProductoModel } from './../modelos/producto'
 import { TipoProductoModel } from './../modelos/tipoProducto'
 
 export const recuperarTodos = async (req: express.Request, res: express.Response) => {
-  const pagina = parseInt(req.query.pagina as string) - 1 || 0
-  const limite = parseInt(req.query.limite as string) || 0
+  const numeroPagina = parseInt(req.query.numeroPagina as string) || 0
+  let tamañoPagina = parseInt(req.query.tamañoPagina as string) || 10
   const busqueda = (req.query.buscar as string) || ''
   const tipo = (req.query.tipo as string) || 'todos'
+
+  if (tamañoPagina > MAX_TAMAÑO_PAGINA) {
+    tamañoPagina = MAX_TAMAÑO_PAGINA
+  }
 
   let idsTipos = await buscarIdsTiposProductos(tipo)
 
@@ -15,23 +21,24 @@ export const recuperarTodos = async (req: express.Request, res: express.Response
   })
     .where('tipoProducto')
     .in(idsTipos)
-    .skip(pagina * limite)
-    .limit(limite)
+    .skip((numeroPagina - 1) * tamañoPagina)
+    .limit(tamañoPagina)
 
   const total = await ProductoModel.countDocuments({
     tipoProducto: { $in: idsTipos },
     nombre: { $regex: busqueda, $options: 'i' },
   })
 
-  const response = {
-    total,
-    pagina: pagina + 1,
-    limite,
-    tipo: tipo,
-    productos,
-  }
+  const urlConsulta = req.get('Host') + req.originalUrl.split('?').shift()!! + '?'
+  const totalPaginas = Math.ceil(total / tamañoPagina)
 
-  res.status(200).send(response)
+  const paginaAnterior = numeroPagina > 1 ? crearUrlPaginacion(urlConsulta, new ParametrosConsultaProducto(numeroPagina, busqueda, productos.length), TipoRecursoUri.PAGINA_ANTERIOR) : null
+  const paginaSiguiente = numeroPagina < totalPaginas ? crearUrlPaginacion(urlConsulta, new ParametrosConsultaProducto(numeroPagina, busqueda, productos.length), TipoRecursoUri.PAGINA_SIGUIENTE) : null
+
+  const metaData = new MetaDataPaginacion(total, tamañoPagina, numeroPagina, totalPaginas, paginaAnterior, paginaSiguiente)
+  res.setHeader('x-paginacion', JSON.stringify(metaData))
+
+  res.status(200).send(productos)
 }
 
 export const recuperarPorId = async (req: express.Request, res: express.Response) => {
