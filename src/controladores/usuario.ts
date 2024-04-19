@@ -1,24 +1,23 @@
 'use strict'
 
-import { IUsuario } from "../modelos/usuario";
-
 var fs = require('fs');
 var path = require('path');
 var bcrypt = require('bcrypt-nodejs');
-var Usuario = require('../modelos/usuario');
-var Persona = require('../modelos/persona');
+
+import { Request, Response } from 'express';
+
+// import Usuario from '../../src/modelos/usuario';
+// var Usuario = require('../modelos/usuario')  //('../modelos/usuario')
+// var Persona = require('../modelos/persona');
+import { PersonaModel } from '../modelos/persona';
+import { UsuarioModel } from '../modelos/usuario';
+
 
 var jwt = require('../servicios/jwt');
 
-const usuario = require('../modelos/usuario');
-var { debug } = require('console');
+import mongoose from 'mongoose';
 
-const mongoose = require('mongoose');
-
-async function pruebasControlador( req:any, res:any ){
-
-    console.log(res);
-
+async function pruebasControlador( req: Request, res: Response ){
     res.status(200).send({
         message: 'Probando una acción del controlador de usuarios del api rest con Node y MongoDB'
     });
@@ -26,7 +25,7 @@ async function pruebasControlador( req:any, res:any ){
 
 async function guardarUsuario( req:any, res:any ){
     
-    var usuario = new Usuario();
+    var usuario = new UsuarioModel();
     var [persona = null, nombre_usuario = null, clave = null, email = null, rol = null, imagen = null, fecha_registro = new Date(), fecha_ultimo_inicio_sesion = new Date() ] = [null, null, null, null, null, null, null, null];
         
     debugger;        
@@ -94,7 +93,7 @@ async function guardarUsuario( req:any, res:any ){
                         
             // Validaciones previas al guardado final del usuario/persona
             // 1) Vemos que no exista otro usuario registrado con ese email
-            const usuarioExistente = await Usuario.findOne({ email: usuario.email });            
+            const usuarioExistente = await UsuarioModel.findOne({ email: usuario.email });            
             
             if( usuario.nombre_usuario != null && usuario.email != null ){
                 if(!usuarioExistente){
@@ -129,7 +128,7 @@ async function guardarUsuario( req:any, res:any ){
 }
 
 async function loguearUsuario( req:any, res:any ){
-    
+    debugger;
     var params = req.body; // Con bodyParser convierte los objetos a JSON
 
     var email = params.email;
@@ -137,7 +136,7 @@ async function loguearUsuario( req:any, res:any ){
 
     try {
         //const usuarioEncontrado = new Usuario();
-        let usuarioEncontrado = await Usuario.find( { email: email.toLowerCase() } );
+        let usuarioEncontrado = await UsuarioModel.find( { email: email.toLowerCase() } );
         
         console.log({user: usuarioEncontrado[0]});
 
@@ -186,7 +185,7 @@ async function actualizarUsuario( req:any, res:any ){
 
     try {
         // Actualizamos el "usuario"
-        const usuarioEncontrado = await Usuario.findByIdAndUpdate( userId, update );    
+        const usuarioEncontrado = await UsuarioModel.findByIdAndUpdate( userId, update );    
         const usuarioActualizado = update;
 
         if( usuarioEncontrado ){
@@ -195,7 +194,7 @@ async function actualizarUsuario( req:any, res:any ){
             update = req.body.persona;
 
             // Actualizamos ahora la "persona"
-            const personaEncontrada = await Persona.findByIdAndUpdate( personaId, update )
+            const personaEncontrada = await PersonaModel.findByIdAndUpdate( personaId, update )
             const personaActualizada = update;
 
                         
@@ -232,7 +231,7 @@ function actualizarImagen( req:any, res:any ){
             
             try {
 
-                Usuario.findByIdAndUpdate(
+                UsuarioModel.findByIdAndUpdate(
                     userId,
                     { $set: { imagen: file_name.toString() } },
                     { new: true }
@@ -285,7 +284,7 @@ async function eliminarUsuario( req:any, res:any )
         // }
 
         // const imagenEliminada = await imagen.deleteMany({ _userId: { $in: usuario.imagen } });
-        const usuarioEliminado = await Usuario.findByIdAndRemove( userId );    
+        const usuarioEliminado = await UsuarioModel.findByIdAndRemove( userId );    
          
         // console.log({ usuarioEliminado });
 
@@ -317,7 +316,7 @@ async function obtenerUsuarios( req:any, res:any ){
     try {
 
         // const usuariosEncontrados = await Usuario.find().sort('nombre_usuario').paginate(paginacion, itemsPorPagina);
-        const usuariosEncontrados = await Usuario.find().sort('nombre_usuario');
+        const usuariosEncontrados = await UsuarioModel.find().sort('nombre_usuario');
 
         //console.log( usuariosEncontrados );
         
@@ -338,7 +337,17 @@ async function obtenerUsuario( req:any, res:any ){
     var update = req.body;
     //console.log(userId);
     try {
-        const usuarioEncontrado = await Usuario.find({ "_id": userId });
+
+        // Asegúrate de que userId sea una cadena de 24 caracteres hexadecimales. Porque sin mandamos "1" por ejemplo explota
+        if (!/^[0-9a-fA-F]{24}$/.test(userId)) {
+            // Maneja el caso en el que userId no tiene el formato correcto
+            // Por ejemplo, lanza un error o maneja la situación de manera adecuada
+
+            throw new Error( 'El "UserId" no posee el formato correcto (ObjectId) para su búsqueda' ); 
+        }
+
+        const userIdObject = new mongoose.Types.ObjectId(userId);
+        const usuarioEncontrado = await UsuarioModel.find({ "_id": userIdObject });
         //console.log( usuarioEncontrado );
 
         if( usuarioEncontrado.length == 0 ){
@@ -347,8 +356,8 @@ async function obtenerUsuario( req:any, res:any ){
             return res.status(200).send({ user: usuarioEncontrado, message: 'Usuario encontrado' });
         }
 
-    } catch (error) {
-        return res.status(500).send({ message: 'Error al obtener el usuario' });
+    } catch (error: any) {
+        return res.status(500).send({ message: 'Error al obtener el usuario', error: error.message });
     }
 }
 

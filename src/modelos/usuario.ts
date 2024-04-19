@@ -1,12 +1,7 @@
 'use strict'
 
-import { Schema } from "mongoose";
-//var mongoose = require('mongoose');
+import mongoose, { Schema, Document, Model } from 'mongoose';
 
-import mongoose from 'mongoose';
-
-
-// VER SI ES NECESARIO!!!
 export interface IUsuario extends Document {
     _id: typeof Schema.ObjectId; // Ver si BORRARLO. OJO!!
     persona: String, // { type: Schema.ObjectId, ref: 'Persona' },
@@ -20,7 +15,8 @@ export interface IUsuario extends Document {
 }
 
 const UsuarioSchema: Schema = new Schema<IUsuario>({
-    _id: { type: Schema.ObjectId, require: true },
+
+const UsuarioSchema: Schema = new Schema({
     persona: { type: String, require: true }, // { type: Schema.ObjectId, ref: 'Persona' },
     nombre_usuario: { type: String, require: true },
     clave: { type: String, require: true },
@@ -31,4 +27,3 @@ const UsuarioSchema: Schema = new Schema<IUsuario>({
     fecha_ultimo_inicio_sesion: { type: Date, default: new Date() } // OJO!!! Ver si funciona
 })
 export const UsuarioModel = mongoose.model<IUsuario>('Usuario', UsuarioSchema);
-

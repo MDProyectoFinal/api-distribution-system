@@ -1,6 +1,12 @@
 'use strict'
 
+// import UsuarioModel from "modelos/usuario";
 import { IPersona } from "../modelos/persona";
+
+import { PersonaModel } from '../modelos/persona';
+import { UsuarioModel } from '../modelos/usuario';
+// var PersonaModel = require('../modelos/persona');
+// var UsuarioModel = require('../modelos/usuario');
 
 var fs = require('fs');
 var path = require('path');
@@ -41,8 +47,8 @@ async function guardarPersona( req:any, res:any ){
     
     var personaGuardada = null;
 
-    var persona = new Persona();
-    var usuario = new Usuario();
+    var persona = new PersonaModel();
+    var usuario = new UsuarioModel();
     var params = req.body;
 
     // Obtener la fecha actual
@@ -94,7 +100,7 @@ async function guardarPersona( req:any, res:any ){
 
         // Borramos la persona ingresada anteriormente si ocurre una falla
         if( personaGuardada ){
-            const personaBorrada = await Persona.deleteOne({ _id: personaGuardada.id })
+            const personaBorrada = await PersonaModel.deleteOne({ _id: personaGuardada.id })
         }       
 
         res.status(500).json({ mensaje: 'Error al guardar la persona: ' + error });
