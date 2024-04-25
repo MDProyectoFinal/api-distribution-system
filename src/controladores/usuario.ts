@@ -176,8 +176,12 @@ async function loguearUsuario( req:any, res:any ){
 async function actualizarUsuario( req:any, res:any ){
     
     var userId = req.params.id; // de la URL viene
+
     // var personaId = req.params.persona;
     var update = req.body;
+
+    // Validamos que por el Body llegue algún campo a actualizar
+    if( !update ) return res.status(404).json( { error: "Se requiere ingresar algun campo para actualizar" });
 
     if( userId != req.usuario.sub ){
         return res.status(500).send({ message: 'No tienes permisos para actualizar este usuario' });
@@ -186,6 +190,7 @@ async function actualizarUsuario( req:any, res:any ){
     try {
         // Actualizamos el "usuario"
         const usuarioEncontrado = await UsuarioModel.findByIdAndUpdate( userId, update );    
+        // Podemos poner en el metodo findByIdAndUpdate ( {new: true}) lo que devolveria el usuario actualizado tambien. Pero perdemos el usuarioAnterior
         const usuarioActualizado = update;
 
         if( usuarioEncontrado ){
@@ -331,30 +336,30 @@ async function obtenerUsuarios( req:any, res:any ){
     }
 }
 
-async function obtenerUsuario( req:any, res:any ){
+async function obtenerUsuarioPorId( req: Request, res: Response ){
 
     var userId = req.params.id; // de la URL viene
     var update = req.body;
-    //console.log(userId);
+
     try {
 
         // Asegúrate de que userId sea una cadena de 24 caracteres hexadecimales. Porque sin mandamos "1" por ejemplo explota
         if (!/^[0-9a-fA-F]{24}$/.test(userId)) {
             // Maneja el caso en el que userId no tiene el formato correcto
-            // Por ejemplo, lanza un error o maneja la situación de manera adecuada
-
             throw new Error( 'El "UserId" no posee el formato correcto (ObjectId) para su búsqueda' ); 
         }
 
+        // Lo convertidos a tupo ObjectId para respetar el tipo de dato en el Model.
         const userIdObject = new mongoose.Types.ObjectId(userId);
-        const usuarioEncontrado = await UsuarioModel.find({ "_id": userIdObject });
-        //console.log( usuarioEncontrado );
+        
+        //const usuarioEncontrado2 = await UsuarioModel.find({ "_id": userIdObject });        
+        const usuarioEncontrado = await UsuarioModel.findById( userIdObject );
 
-        if( usuarioEncontrado.length == 0 ){
-            res.status(404).send({ message: 'Usuario no existe' });
-        }else{
-            return res.status(200).send({ user: usuarioEncontrado, message: 'Usuario encontrado' });
+        if( !usuarioEncontrado ){
+            return res.status(404).send({ message: 'Usuario no existe' });
         }
+            
+        return res.status(200).send({ user: usuarioEncontrado, message: 'Usuario encontrado' });        
 
     } catch (error: any) {
         return res.status(500).send({ message: 'Error al obtener el usuario', error: error.message });
@@ -370,5 +375,5 @@ module.exports = {
     obtenerArchivoImagen,
     eliminarUsuario,
     obtenerUsuarios,
-    obtenerUsuario
+    obtenerUsuarioPorId
 };

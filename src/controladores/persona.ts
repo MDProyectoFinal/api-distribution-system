@@ -1,5 +1,7 @@
 'use strict'
 
+//const mongoose = require('mongoose');
+import mongoose from "mongoose";
 // import UsuarioModel from "modelos/usuario";
 import { IPersona } from "../modelos/persona";
 
@@ -114,7 +116,7 @@ async function obtenerPersona( req:any, res:any ) : Promise<IPersona|undefined>{
     var update = req.body;
     
     try {
-        const personaEncontrada = await Persona.find({ "_id": personaId });
+        const personaEncontrada = await PersonaModel.find({ "_id": personaId });
         // console.log( personaEncontrada );
 
         if( personaEncontrada.length == 0 ){
@@ -130,32 +132,55 @@ async function obtenerPersona( req:any, res:any ) : Promise<IPersona|undefined>{
 
 async function actualizarPersona( req:any, res:any ){
     
-    var personaId = req.params.id; // de la URL viene
-    var update = req.body;
+    debugger;
+    const personaId = req.params.id; // de la URL viene
+    
+    // Asegúrate de que userId sea una cadena de 24 caracteres hexadecimales. Porque sin mandamos "1" por ejemplo explota
+    if (!/^[0-9a-fA-F]{24}$/.test(personaId)) {
+        // Maneja el caso en el que userId no tiene el formato correcto
+        throw new Error( 'El "UserId" no posee el formato correcto (ObjectId) para su búsqueda' ); 
+    }
 
-    var userId = ''; // revisar esto!!!!!!!!
+    // Lo convertidos a tupo ObjectId para respetar el tipo de dato en el Model.
+    const personaIdObject = new mongoose.Types.ObjectId(personaId);
 
-    if( personaId != req.usuario.sub ){
+    var update = req.body;   
+
+    // Validamos que por el Body llegue algún campo a actualizar
+    if (Object.keys(update).length === 0) {
+        return res.status(400).json({ error: 'No se proporcionaron datos para actualizar' });
+    }
+
+    // Compara los datos guardados del usuario autenticado con el personId enviado. Pepe no puede actualizar datos de Juan
+    if( personaId != req.usuario.persona ){
         return res.status(500).send({ message: 'No tienes permisos para actualizar este usuario' });
     }
 
     try {
-        const userEncontrado = await Usuario.findByIdAndUpdate( userId, update );    
+        // el new: true, devuelve el usuario actualizado. Si es "false" devuelve el usuario previo a la actualizacion
+        const personaActualizada = await PersonaModel.findByIdAndUpdate( personaIdObject.toHexString(), update, { new: true } );    
 
-        if( userEncontrado ){
-            return res.status(200).send({ user: userEncontrado });    
+        if( personaActualizada ){
+            return res.status(200).send({ personaAct: personaActualizada });    
         }else{
-            res.status(404).send({ message: 'No se ha podido encontrar y actualizar el usuario'});
+            res.status(404).send({ message: 'No se ha podido encontrar y actualizar la persona'});
         }
         
     } catch (error) {
-        return res.status(500).send({ message: 'Error al actualzar el usuario' + error });
+        return res.status(500).send({ message: 'Error al actualizar la persona' + error });
     }
+}
+
+async function eliminarPersona ( req:Request, res: Response){
+
+    // Method not implemented
 }
 
 module.exports = {
     pruebasPersona,
     guardarPersona,
     obtenerPersona,
+    actualizarPersona,
+    eliminarPersona,
     pruebaCodigoDev    
 };

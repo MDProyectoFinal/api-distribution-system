@@ -12,7 +12,9 @@ export const router = express.Router()
 
 router.get('/pruebas-persona', PersonaController.pruebasPersona);
 router.post('/guardar-persona', PersonaController.guardarPersona);
-router.post('/prueba-codigo-dev', PersonaController.pruebaCodigoDev);
 router.get('/obtener-persona/:id', md_aute.asegurarAutenticacion, PersonaController.obtenerPersona);
+router.put('/actualizar-persona/:id', md_aute.asegurarAutenticacion, PersonaController.actualizarPersona);
+router.post('/prueba-codigo-dev', PersonaController.pruebaCodigoDev);
+router.post('/eliminar-persona/:id', md_aute.asegurarAutenticacion, PersonaController.eliminarPersona)
 
 // module.exports = router;
