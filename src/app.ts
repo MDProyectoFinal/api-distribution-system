@@ -5,10 +5,10 @@ require('dotenv').config();
 import express from 'express';
 //var express = require('express');
 var bodyParser = require('body-parser');
-
-// Configurar la aplicación
 var app = express();
-app.use(bodyParser.urlencoded({ extended: false }));
+
+// Middlewares
+app.use(bodyParser.urlencoded({ extended: true })); // Nos permite el uso de x-www-form-unrencoded de Postman
 app.use(bodyParser.json()); // Convierte a objeto json los datos o peticiones q nos llegan por http
 
 // Cargar rutas

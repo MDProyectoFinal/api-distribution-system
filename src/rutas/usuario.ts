@@ -19,6 +19,6 @@ router.post('/actualizar-imagen-usuario/:id', [md_aute.asegurarAutenticacion, md
 router.get('/obtener-archivo-imagen/:archivoImagen', UsuarioController.obtenerArchivoImagen);
 router.delete('/eliminar-usuario/:id', md_aute.asegurarAutenticacion, UsuarioController.eliminarUsuario);
 router.get('/obtener-usuarios', UsuarioController.obtenerUsuarios );
-router.get('/obtener-usuario/:id', md_aute.asegurarAutenticacion, UsuarioController.obtenerUsuario );
+router.get('/obtener-usuario/:id', md_aute.asegurarAutenticacion, UsuarioController.obtenerUsuarioPorId );
 
 // module.exports = router;
