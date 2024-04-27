@@ -4,11 +4,11 @@ var mongoose = require('mongoose');
 var Schema = mongoose.Schema;
 
 export interface IPersona extends Document {
-    nombre: string | undefined;
-    apellido: String | undefined,
-    fecha_nacimiento: String | undefined,
-    direccion: String | undefined,
-    telefono: String | undefined
+    nombre: string | null;
+    apellido: String | null,
+    fecha_nacimiento: String | null,
+    direccion: String | null,
+    telefono: String | null
 }
 
 const PersonaSchema: IPersona = new Schema({

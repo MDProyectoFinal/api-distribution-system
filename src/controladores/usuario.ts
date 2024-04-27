@@ -18,9 +18,21 @@ var jwt = require('../servicios/jwt');
 import mongoose from 'mongoose';
 
 async function pruebasControlador( req: Request, res: Response ){
-    res.status(200).send({
-        message: 'Probando una acción del controlador de usuarios del api rest con Node y MongoDB'
-    });
+    
+    // Actualizar todos los registros existentes para establecer 'eliminado' en 'false'
+    try {
+        const result = await UsuarioModel.updateMany({}, { $set: { baja: false, fecha_baja: null } });
+        console.log("Operación exitosa:", result);
+
+        res.status(200).send({
+            message: 'Probando una acción del controlador de usuarios del api rest con Node y MongoDB'
+        });
+        
+    } catch (error) {
+        console.error("Error al actualizar:", error);
+    }
+    
+    
 }
 
 async function guardarUsuario( req:any, res:any ){
@@ -34,7 +46,7 @@ async function guardarUsuario( req:any, res:any ){
     // Vemos si viene por el body (metodo directo) o si viene desde el "Guardar Persona"
     if (typeof req.body === 'undefined' || req.body === '') {
         // Si viene desde el método GuardarPersona
-        usuario._id = new mongoose.Types.ObjectId();
+        //usuario._id = new mongoose.Types.ObjectId();
         persona = req.persona;
         nombre_usuario = req.nombre_usuario;
         clave = req.clave;
@@ -45,7 +57,7 @@ async function guardarUsuario( req:any, res:any ){
         fecha_ultimo_inicio_sesion = req.fecha_ultimo_inicio_sesion;
     }else{
         // Si el método es llamado directo. Desde Postman por ejemplo
-        usuario._id = new mongoose.Types.ObjectId();
+        //usuario._id = new mongoose.Types.ObjectId();
         persona = req.body.persona;
         nombre_usuario = req.body.nombre_usuario;
         clave = req.body.clave;
