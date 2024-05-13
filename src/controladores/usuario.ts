@@ -16,27 +16,39 @@ import { UsuarioModel } from '../modelos/usuario';
 var jwt = require('../servicios/jwt');
 
 import mongoose from 'mongoose';
+import moment from 'moment';
+import { RegistroUsuarioDto } from '../dominio/dtos/auth/registro-usuario-dto';
+import { ErrorPersonalizado } from "../dominio/errors/error.personalizado";
+import { bcryptAdapter } from '../config';
+import { LoginUsuarioDto } from '../dominio';
+
 
 async function pruebasControlador( req: Request, res: Response ){
     
-    // Actualizar todos los registros existentes para establecer 'eliminado' en 'false'
-    try {
-        const result = await UsuarioModel.updateMany({}, { $set: { baja: false, fecha_baja: null } });
-        console.log("Operación exitosa:", result);
+    console.log(moment().toDate());
 
-        res.status(200).send({
-            message: 'Probando una acción del controlador de usuarios del api rest con Node y MongoDB'
-        });
+    // ************* Actualizar todos los registros existentes para establecer 'eliminado' en 'false'
+    // try {
+    //     const result = await UsuarioModel.updateMany({}, { $set: { baja: false, fecha_baja: null } });
+    //     console.log("Operación exitosa:", result);
+
+    //     res.status(200).send({
+    //         message: 'Probando una acción del controlador de usuarios del api rest con Node y MongoDB'
+    //     });
         
-    } catch (error) {
-        console.error("Error al actualizar:", error);
-    }
+    // } catch (error) {
+    //     console.error("Error al actualizar:", error);
+    // }
     
+    res.status(200).send({
+        message: 'Probando una acción del controlador de usuarios del api rest con Node y MongoDB'
+    });
     
 }
 
 async function guardarUsuario( req:any, res:any ){
     
+    // Continuamos el circuito anterior normalmente
     var usuario = new UsuarioModel();
     var [persona = null, nombre_usuario = null, clave = null, email = null, rol = null, imagen = null, fecha_registro = new Date(), fecha_ultimo_inicio_sesion = new Date() ] = [null, null, null, null, null, null, null, null];
         
@@ -67,6 +79,10 @@ async function guardarUsuario( req:any, res:any ){
         fecha_ultimo_inicio_sesion = fecha_actual;
     }
 
+    // NUEVO: Validacion de los campos del lado del back.
+    const [error, registroDto] = RegistroUsuarioDto.create( { nombre_usuario, clave, email} );    
+    if ( error ) throw ErrorPersonalizado.badRequest( error );    //return  res.status(400).json( {error} );
+
     // PARA TEST
     // console.log( "persona: " + persona );
     // console.log( "nombre_usuario: " + nombre_usuario );
@@ -92,21 +108,26 @@ async function guardarUsuario( req:any, res:any ){
         if( usuario.clave ){
             
             // Encriptar contraseña y guardar datos
-            const claveHash = new Promise(async (resolve, reject) => {
-                await bcrypt.hash( usuario.clave, null, null, async function(err:any, hash:any) {
-                    if (err) {                        
-                        reject(err);
-                    } else {
-                        usuario.clave = hash;
-                        resolve(hash);
-                    }
-                });
-            });
+            // const claveHash = new Promise(async (resolve, reject) => {
+            //     await bcrypt.hash( usuario.clave, null, null, async function(err:any, hash:any) {
+            //         if (err) {                        
+            //             reject(err);
+            //         } else {
+            //             usuario.clave = hash;
+            //             resolve(hash);
+            //         }
+            //     });
+            // });
                         
+            // NUEVA: Otra forma de encriptación 
+            usuario.clave = bcryptAdapter.hash( usuario.clave );
+
+
             // Validaciones previas al guardado final del usuario/persona
             // 1) Vemos que no exista otro usuario registrado con ese email
             const usuarioExistente = await UsuarioModel.findOne({ email: usuario.email });            
             
+            // En teoría esto no haría falta xq en la linea 81 aprox tenemos el "RegistroUsuarioDto.create" que valida eso.
             if( usuario.nombre_usuario != null && usuario.email != null ){
                 if(!usuarioExistente){
                                         
@@ -119,18 +140,22 @@ async function guardarUsuario( req:any, res:any ){
                         return usuarioGuardado;
                     }else{
                         console.log({ success: false, message: 'Error al guardar el usuario' }); 
-                        throw new Error( 'Error al guardar el usuario (del metodo save)' );                                             
+                        throw ErrorPersonalizado.badRequest('Error al guardar el usuario (del metodo save)');  
+                        // throw new Error( 'Error al guardar el usuario (del metodo save)' );                                             
                         // res.status(500).send({ message: 'Error al guardar el usuario'}); //.end()
                     }
 
-                }else{                    
-                    throw new Error( 'Ya existe un usuario registrado con ese email' );                    
+                }else{ 
+                    throw ErrorPersonalizado.badRequest('Ya existe un usuario registrado con ese email');                    
+                    // throw new Error( 'Ya existe un usuario registrado con ese email' );                    
                 } 
             }else{                
-                throw new Error( 'Complete todos los campos' );                
+                throw ErrorPersonalizado.badRequest('Complete todos los campos'); 
+                //throw new Error( 'Complete todos los campos' );                
             }                        
         }else{     
-            throw new Error('¡¡Introduce la contraseña!!'); // Lanzar un error controlado            
+            throw ErrorPersonalizado.badRequest('Por favor, introduzca la contraseña'); 
+            // throw new Error('¡¡Introduce la contraseña!!'); // Lanzar un error controlado            
         }
 
     } catch (error) {        
@@ -141,47 +166,80 @@ async function guardarUsuario( req:any, res:any ){
 
 async function loguearUsuario( req:any, res:any ){
     debugger;
+    
     var params = req.body; // Con bodyParser convierte los objetos a JSON
 
     var email = params.email;
     var clave = params.clave;
 
-    try {
-        //const usuarioEncontrado = new Usuario();
-        let usuarioEncontrado = await UsuarioModel.find( { email: email.toLowerCase() } );
+    try {   
+
+        // NUEVO: Validacion de los campos del lado del back.
+        const [error, loginUsuarioDto] = LoginUsuarioDto.create( { clave, email} );    
+        if ( error ) throw ErrorPersonalizado.badRequest( error );    //return  res.status(400).json( {error} );
+                
+        // Buscamos el usuario por medio del mail
+        let usuarioEncontrado = await UsuarioModel.findOne( { email: loginUsuarioDto?.email.toLowerCase() } );        
+        console.log({user: usuarioEncontrado});
+
+        if( !usuarioEncontrado )
+            throw ErrorPersonalizado.badRequest('Usuario y/o Contraseña incorrectas');
         
-        console.log({user: usuarioEncontrado[0]});
+        if (usuarioEncontrado.clave !== null && usuarioEncontrado.clave !== undefined) {
 
-        if( usuarioEncontrado.length == 0 ){            
-            res.status(404).send({ message: 'Usuario no existe' });
-        }else{
-            // Comprobar la contraseña
-            bcrypt.compare( clave, usuarioEncontrado[0].clave, function( err:any, check:any ) {
-                if( check ){
-                    // Devolver los datos del usuario logueado                        
-                    if( params.gethash ){
-                        // Generamos un token de JWT con el usuario logueado, para usarlo en TODO el sistema
-                        res.status(200).send({
-                            // token: jwt.createToken( usuarioEncontrado[0] )
-                            token: jwt.createToken( usuarioEncontrado[0] )
-                        })
+            // Convertimos el tipo String de JS a string primitivo para usar el "compare"
+            const claveString = typeof usuarioEncontrado.clave === 'string' ? usuarioEncontrado.clave : usuarioEncontrado.clave.toString();
 
-                        // res.status(200).send({ 
-                        //     token: jwt.createToken( usuarioEncontrado )
-                        // });
-    
-                    }else{                    
-                        res.status(200).send( usuarioEncontrado[0] ); // No hace falta { user: user }. Ya se llama "user"
-                    }
-                }else{
-                    // Cuando el password desencriptado no coincide
-                    res.status(404).send({ message: 'No se ha podido identificar el usuario. Clave Incorrecta' });
-                }
-            });
+            // Hacemos la comparación de claves para ver si coinciden
+            const isMatching = bcryptAdapter.compare(clave, claveString);
+            if( !isMatching ) throw ErrorPersonalizado.notFound("La contraseña no es válida");
+
+            // Vemos si se envío el parametro getHash() para devolver el token generado o no, según corresponda.
+            if( params.gethash ){
+                // Generamos un token de JWT con el usuario logueado, para usarlo en TODO el sistema 
+                res.status(200).send({
+                    token: jwt.createToken( usuarioEncontrado ),
+                    usuarioEncontrado
+                })  
+            }else{
+                // Enviamos el usuario logueado
+                res.status(200).send( usuarioEncontrado );
+            }                
+
+        } else {
+            throw ErrorPersonalizado.notFound("La clave del usuario no está definida");
         }
+        
+        
+        // Comprobar la contraseña
+        // bcrypt.compare( loginUsuarioDto?.clave, usuarioEncontrado.clave, function( err:any, check:any ) {
+        //     if( check ){
+        //         // Devolver los datos del usuario logueado                        
+        //         if( params.gethash ){
+        //             // Generamos un token de JWT con el usuario logueado, para usarlo en TODO el sistema
+        //             res.status(200).send({
+        //                 // token: jwt.createToken( usuarioEncontrado[0] )
+        //                 token: jwt.createToken( usuarioEncontrado )
+        //             })
 
-    } catch (error) {
-        return res.status(500).send({ message: 'Error al loguear el usuario' });
+        //             // res.status(200).send({ 
+        //             //     token: jwt.createToken( usuarioEncontrado )
+        //             // });
+
+        //         }else{                    
+        //             res.status(200).send( usuarioEncontrado ); // No hace falta { user: user }. Ya se llama "user"
+        //         }
+        //     }else{
+        //         // Cuando el password desencriptado no coincide
+        //         throw ErrorPersonalizado.notFound('No se ha podido identificar el usuario. Clave Incorrecta');
+        //         // res.status(404).send({ message: 'No se ha podido identificar el usuario. Clave Incorrecta' });
+        //     }
+        // });
+        
+
+    } catch (error: any) {
+        debugger;
+        return res.status(500).send({ error: error, message: error.message });
     }
 }
 
@@ -287,10 +345,25 @@ function obtenerArchivoImagen(req:any, res:any){
 
 }
 
-async function eliminarUsuario( req:any, res:any )
+async function eliminarUsuario( req: Request, res: Response )
 {
     try {
-        var userId = req.params.id;
+        var idUsuarioAEliminar = req.params.id;
+
+        // Marcar un usuario como eliminado
+        const usuarioAEliminar = await UsuarioModel.findById(idUsuarioAEliminar);
+        if (usuarioAEliminar) {
+            usuarioAEliminar.baja = true;
+            usuarioAEliminar.fecha_baja = moment().toDate();
+            await usuarioAEliminar.save();
+
+            return res.status(200).send({ message: `El usuario ${usuarioAEliminar.nombre_usuario} fue dado de baja.`});
+
+            // TODO: 
+
+        }else{
+            return res.status(404).send({ message: 'No se ha podido localizar el usuario a eliminar'});
+        }
 
         // ES AL PEDO ESTA PARTE!!!
         // const usuario = await Usuario.findById( userId );
@@ -301,15 +374,15 @@ async function eliminarUsuario( req:any, res:any )
         // }
 
         // const imagenEliminada = await imagen.deleteMany({ _userId: { $in: usuario.imagen } });
-        const usuarioEliminado = await UsuarioModel.findByIdAndRemove( userId );    
+        // const usuarioEliminado = await UsuarioModel.findByIdAndRemove( userId );    
          
-        // console.log({ usuarioEliminado });
+        // // console.log({ usuarioEliminado });
 
-        if( usuarioEliminado == null ){
-            return res.status(404).send({ message: 'No se ha podido eliminar el usuario'});
-        }      
+        // if( usuarioEliminado == null ){
+        //     return res.status(404).send({ message: 'No se ha podido eliminar el usuario'});
+        // }      
 
-        return res.status(200).send({ user: usuarioEliminado, message: 'Usuario eliminado correctamente!!' }); 
+        // return res.status(200).send({ user: usuarioEliminado, message: 'Usuario eliminado correctamente!!' }); 
         
         // res.redirect('/getCars')
 

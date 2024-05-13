@@ -10,17 +10,18 @@ import { UsuarioModel } from '../modelos/usuario';
 // var PersonaModel = require('../modelos/persona');
 // var UsuarioModel = require('../modelos/usuario');
 
-var fs = require('fs');
-var path = require('path');
+import { ErrorPersonalizado } from "../dominio/errors/error.personalizado";
+
+// var fs = require('fs');
+// var path = require('path');
 var moment = require('moment');
 
-var Persona = require('../modelos/persona');
-var Usuario = require('../modelos/usuario');
+// var Persona = require('../modelos/persona');
+// var Usuario = require('../modelos/usuario');
 
 // const mongoose = require('mongoose'); // Si estás utilizando require
 
 var { guardarUsuario } = require('./usuario');
-var { debug } = require('console');
 // const { params } = require('../app');
 
 function pruebasPersona( req:any, res:any ){
@@ -93,7 +94,8 @@ async function guardarPersona( req:any, res:any ){
                 }
                             
         }else{
-            throw new Error('Complete todos los campos'); // Lanzar un error controlado
+            throw ErrorPersonalizado.badRequest('Complete todos los campos');
+            // throw new Error('Complete todos los campos'); // Lanzar un error controlado
             // res.status(200).json( { message: 'Complete todos los campos' });
         }
 
