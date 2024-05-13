@@ -31,8 +31,8 @@ app.use( ( req: any, res: any, next: any ) => {
 });
 
 // Rutas base
-app.use('/api', usuario_rutas.router );
-app.use('/api', persona_rutas.router );
+app.use('/api/usuarios', usuario_rutas.router );
+app.use('/api/personas', persona_rutas.router );
 app.use('/api/tiposProductos', rutaTipoProducto.router);
 app.use('/api/productos', rutaProducto.router);
 app.use('/api/pedidos', rutaPedidos.router);
