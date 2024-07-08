@@ -2,6 +2,7 @@
 
 //const mongoose = require('mongoose');
 import mongoose from "mongoose";
+import express from 'express'
 // import UsuarioModel from "modelos/usuario";
 import { IPersona } from "../modelos/persona";
 
@@ -47,7 +48,7 @@ function pruebaCodigoDev( req:any, res:any ){
 
 // Llamar dicho metodo desde el guardar usuario
 async function guardarPersona( req:any, res:any ){
-    
+
     var personaGuardada = null;
 
     var persona = new PersonaModel();
@@ -56,14 +57,14 @@ async function guardarPersona( req:any, res:any ){
 
     // Obtener la fecha actual
     const fechaActual = new Date();
-      
+
     // Datos del USUARIO
     usuario.persona = null;
     usuario.nombre_usuario = params.nombre_usuario;
     usuario.clave = (params.clave == null ? params.password : params.clave);
     usuario.rol = params.rol;
     usuario.email = (params.email == null ? params.correo_electronico : params.email);
-    usuario.imagen = null;   
+    usuario.imagen = null;
     usuario.fecha_registro = fechaActual;
     usuario.fecha_ultimo_inicio_sesion = fechaActual;
 
@@ -72,40 +73,40 @@ async function guardarPersona( req:any, res:any ){
     persona.apellido = (params.apellido == null ? params.persona.apellido : params.apellido);
     persona.fecha_nacimiento = (params.fecha_nacimiento == null ? params.persona.fecha_nacimiento : params.fecha_nacimiento);
     persona.direccion = (params.direccion == null ? params.persona.direccion : params.direccion);
-    persona.telefono = (params.telefono == null ? params.persona.telefono : params.telefono);   
-        
+    persona.telefono = (params.telefono == null ? params.persona.telefono : params.telefono);
+
     try {
 
-        if( persona.nombre != '' && persona.apellido != '' && persona.fecha_nacimiento != '' && persona.direccion != '' && persona.telefono != '' ){                 
-                
+        if( persona.nombre != '' && persona.apellido != '' && persona.fecha_nacimiento != '' && persona.direccion != '' && persona.telefono != '' ){
+
                 // NUEVO
-                personaGuardada = await persona.save();                
-                console.log('persona guardada!!');                
-                
+                personaGuardada = await persona.save();
+                console.log('persona guardada!!');
+
                 // Asignamos el id de la persona ingresada
                 usuario.persona = personaGuardada.id
 
                 // ** Guardamos el usuario asociado **
-                const usuarioGuardado = await guardarUsuario( usuario, res );                
+                const usuarioGuardado = await guardarUsuario( usuario, res );
                 // console.log(usuarioGuardado);
-                
+
                 if(usuarioGuardado && personaGuardada){
                     res.status(200).send({ persona: personaGuardada, usuario: usuarioGuardado });
                 }
-                            
+
         }else{
             throw ErrorPersonalizado.badRequest('Complete todos los campos');
             // throw new Error('Complete todos los campos'); // Lanzar un error controlado
             // res.status(200).json( { message: 'Complete todos los campos' });
         }
 
-    } catch (error) {        
+    } catch (error) {
         console.error('Error al guardar la persona:', error);
 
         // Borramos la persona ingresada anteriormente si ocurre una falla
         if( personaGuardada ){
             const personaBorrada = await PersonaModel.deleteOne({ _id: personaGuardada.id })
-        }       
+        }
 
         res.status(500).json({ mensaje: 'Error al guardar la persona: ' + error });
         return;
@@ -116,7 +117,7 @@ async function obtenerPersona( req:any, res:any ) : Promise<IPersona|undefined>{
 
     var personaId = req.params.id; // de la URL viene
     var update = req.body;
-    
+
     try {
         const personaEncontrada = await PersonaModel.find({ "_id": personaId });
         // console.log( personaEncontrada );
@@ -133,20 +134,20 @@ async function obtenerPersona( req:any, res:any ) : Promise<IPersona|undefined>{
 }
 
 async function actualizarPersona( req:any, res:any ){
-    
+
     debugger;
     const personaId = req.params.id; // de la URL viene
-    
+
     // Asegúrate de que userId sea una cadena de 24 caracteres hexadecimales. Porque sin mandamos "1" por ejemplo explota
     if (!/^[0-9a-fA-F]{24}$/.test(personaId)) {
         // Maneja el caso en el que userId no tiene el formato correcto
-        throw new Error( 'El "UserId" no posee el formato correcto (ObjectId) para su búsqueda' ); 
+        throw new Error( 'El "UserId" no posee el formato correcto (ObjectId) para su búsqueda' );
     }
 
     // Lo convertidos a tupo ObjectId para respetar el tipo de dato en el Model.
     const personaIdObject = new mongoose.Types.ObjectId(personaId);
 
-    var update = req.body;   
+    var update = req.body;
 
     // Validamos que por el Body llegue algún campo a actualizar
     if (Object.keys(update).length === 0) {
@@ -160,18 +161,35 @@ async function actualizarPersona( req:any, res:any ){
 
     try {
         // el new: true, devuelve el usuario actualizado. Si es "false" devuelve el usuario previo a la actualizacion
-        const personaActualizada = await PersonaModel.findByIdAndUpdate( personaIdObject.toHexString(), update, { new: true } );    
+        const personaActualizada = await PersonaModel.findByIdAndUpdate( personaIdObject.toHexString(), update, { new: true } );
 
         if( personaActualizada ){
-            return res.status(200).send({ personaAct: personaActualizada });    
+            return res.status(200).send({ personaAct: personaActualizada });
         }else{
             res.status(404).send({ message: 'No se ha podido encontrar y actualizar la persona'});
         }
-        
+
     } catch (error) {
         return res.status(500).send({ message: 'Error al actualizar la persona' + error });
     }
 }
+
+const actualizacionParcial = async (req: express.Request, res: express.Response) => {
+    try {
+      const { id } = req.params
+      const persona ={ nombre: req.body.nombre, apellido: req.body.apellido, telefono : req.body.telefono, direccion : req.body.direccion}
+      const personaModificada =  await PersonaModel.findOneAndUpdate({ _id: id }, persona)
+
+      if (!personaModificada) {
+        return res.sendStatus(404)
+      }
+
+      return res.sendStatus(204)
+    } catch (error) {
+      console.log(error)
+      return res.sendStatus(500)
+    }
+  }
 
 async function eliminarPersona ( req:Request, res: Response){
 
@@ -184,5 +202,6 @@ module.exports = {
     obtenerPersona,
     actualizarPersona,
     eliminarPersona,
-    pruebaCodigoDev    
+    pruebaCodigoDev,
+    actualizacionParcial
 };

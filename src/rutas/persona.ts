@@ -16,5 +16,6 @@ router.get('/obtener-persona/:id', md_aute.asegurarAutenticacion, PersonaControl
 router.put('/actualizar-persona/:id', md_aute.asegurarAutenticacion, PersonaController.actualizarPersona);
 router.post('/prueba-codigo-dev', PersonaController.pruebaCodigoDev);
 router.post('/eliminar-persona/:id', md_aute.asegurarAutenticacion, PersonaController.eliminarPersona)
+router.patch('/:id',md_aute.asegurarAutenticacion, PersonaController.actualizacionParcial)
 
 // module.exports = router;
