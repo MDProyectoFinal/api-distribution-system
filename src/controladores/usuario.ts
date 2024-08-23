@@ -451,6 +451,35 @@ async function obtenerUsuarioPorId( req: Request, res: Response ){
     }
 }
 
+async function obtenerUsuarioPorNombreUsuario( req: Request, res: Response ){
+
+    var nombreUsuario = req.params.nombreUsuario; // de la URL viene
+      
+    try {
+
+        // Asegúrate de que userId sea una cadena de 24 caracteres hexadecimales. Porque sin mandamos "1" por ejemplo explota
+        if ( !nombreUsuario ) {
+            // Maneja el caso en el que userId no tiene el formato correcto
+            throw new Error( 'No ingresó un nombre de usuario' ); 
+        }
+             
+        // La "i" hace que sea insensible a mayúsculas y minúsculas. $regex es un operador de mongoose
+        const usuarioEncontrado = await UsuarioModel.find({ 
+            nombre_usuario: { $regex: new RegExp(nombreUsuario, 'i') }
+        });
+        // const usuarioEncontrado = await UsuarioModel.find({ nombre_usuario: nombreUsuario });
+
+        if( !usuarioEncontrado || usuarioEncontrado.length === 0 ){
+            return res.status(404).send({ users: [], message: 'Usuario no existe' });
+        }
+            
+        return res.status(200).send({ users: usuarioEncontrado, message: 'Usuario/s encontrado/s' });        
+
+    } catch (error: any) {
+        return res.status(500).send({ message: 'Error al obtener el/los usuario/s', error: error.message });
+    }
+}
+
 module.exports = {
     pruebasControlador,
     guardarUsuario,
@@ -460,5 +489,6 @@ module.exports = {
     obtenerArchivoImagen,
     eliminarUsuario,
     obtenerUsuarios,
-    obtenerUsuarioPorId
+    obtenerUsuarioPorId,
+    obtenerUsuarioPorNombreUsuario
 };

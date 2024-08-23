@@ -20,5 +20,6 @@ router.get('/obtener-archivo-imagen/:archivoImagen', UsuarioController.obtenerAr
 router.delete('/eliminar-usuario/:id', md_aute.asegurarAutenticacion, UsuarioController.eliminarUsuario);
 router.get('/obtener-usuarios', UsuarioController.obtenerUsuarios );
 router.get('/obtener-usuario/:id', md_aute.asegurarAutenticacion, UsuarioController.obtenerUsuarioPorId );
+router.get('/obtener-usuarios/nombre/:nombreUsuario', md_aute.asegurarAutenticacion, UsuarioController.obtenerUsuarioPorNombreUsuario );
 
 // module.exports = router;
