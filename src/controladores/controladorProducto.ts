@@ -5,7 +5,7 @@ import { ProductoModel } from './../modelos/producto'
 import { TipoProductoModel } from './../modelos/tipoProducto'
 
 export const recuperarTodos = async (req: express.Request, res: express.Response) => {
-  const numeroPagina = parseInt(req.query.numeroPagina as string) || 0
+  const numeroPagina = parseInt(req.query.numeroPagina as string) || 1
   let tamañoPagina = parseInt(req.query.tamañoPagina as string) || 10
   const busqueda = (req.query.buscar as string) || ''
   const tipo = (req.query.tipo as string) || 'todos'
@@ -29,13 +29,14 @@ export const recuperarTodos = async (req: express.Request, res: express.Response
     nombre: { $regex: busqueda, $options: 'i' },
   })
 
-  const urlConsulta = req.get('Host') + req.originalUrl.split('?').shift()!! + '?'
+  const urlConsulta = req.protocol + '://'+ req.get('Host') + req.originalUrl.split('?').shift()!! + '?'
   const totalPaginas = Math.ceil(total / tamañoPagina)
 
-  const paginaAnterior = numeroPagina > 1 ? crearUrlPaginacion(urlConsulta, new ParametrosConsultaProducto(numeroPagina, busqueda, productos.length), TipoRecursoUri.PAGINA_ANTERIOR) : null
-  const paginaSiguiente = numeroPagina < totalPaginas ? crearUrlPaginacion(urlConsulta, new ParametrosConsultaProducto(numeroPagina, busqueda, productos.length), TipoRecursoUri.PAGINA_SIGUIENTE) : null
+  const paginaAnterior = numeroPagina > 1 ? crearUrlPaginacion(urlConsulta, new ParametrosConsultaProducto(numeroPagina, busqueda, tamañoPagina), TipoRecursoUri.PAGINA_ANTERIOR) : null
+  const paginaSiguiente = numeroPagina < totalPaginas ? crearUrlPaginacion(urlConsulta, new ParametrosConsultaProducto(numeroPagina, busqueda, tamañoPagina), TipoRecursoUri.PAGINA_SIGUIENTE) : null
 
   const metaData = new MetaDataPaginacion(total, tamañoPagina, numeroPagina, totalPaginas, paginaAnterior, paginaSiguiente)
+  res.setHeader('Access-Control-Expose-Headers', 'x-paginacion')
   res.setHeader('x-paginacion', JSON.stringify(metaData))
 
   res.status(200).send(productos)
