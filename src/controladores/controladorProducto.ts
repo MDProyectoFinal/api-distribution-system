@@ -1,11 +1,15 @@
 import express from 'express'
+import multer from 'multer'
+import cloudinary from '../servicios/cloudinary.config'
 import { crearUrlPaginacion, MAX_TAMAÑO_PAGINA, MetaDataPaginacion, TipoRecursoUri } from './../paginacion/index'
 import ParametrosConsultaProducto from './../paginacion/parametrosConsultaProductos'
 import { ProductoModel } from './../modelos/producto'
 import { TipoProductoModel } from './../modelos/tipoProducto'
+import fs from 'fs'
+import { LogModel } from 'modelos/log'
 
 export const recuperarTodos = async (req: express.Request, res: express.Response) => {
-  const numeroPagina = parseInt(req.query.numeroPagina as string) || 0
+  const numeroPagina = parseInt(req.query.numeroPagina as string) || 1
   let tamañoPagina = parseInt(req.query.tamañoPagina as string) || 10
   const busqueda = (req.query.buscar as string) || ''
   const tipo = (req.query.tipo as string) || 'todos'
@@ -58,23 +62,58 @@ export const recuperarPorId = async (req: express.Request, res: express.Response
 
 export const insertarProducto = async (req: express.Request, res: express.Response) => {
   try {
-    const { nombre, descripcion, imagen, precio_unitario, stock, categoria } = req.body
+    const { nombre, descripcion, precio_unitario, stock, tipoProducto } = req.body
+    const imagen = req.file?.path
+    let urlImagen
 
-    // TODO: Validaciones, getCategoria
+    if (!nombre) {
+      return res.status(400).send('El nombre no puede estar vacío.')
+    }
 
-    const tipoProducto = await TipoProductoModel.findById(categoria)
+    if (!descripcion) {
+      return res.status(400).send('La descripción no puede estar vacía.')
+    }
 
-    if (!tipoProducto) {
+    if (stock < 0) {
+      return res.status(400).send('El stock debe ser mayor que 0.')
+    }
+
+    if (!precio_unitario) {
+      return res.status(400).send('El precio unitario no puede estar vacío.')
+    }
+
+    const existe = await ProductoModel.findOne({ nombre: nombre })
+
+    if (existe) {
+      return res.status(400).send('Ya existe un producto con ese nombre')
+    }
+
+    const tipoProductoEncontrado = await TipoProductoModel.findById(tipoProducto)
+
+    if (!tipoProductoEncontrado) {
       return res.status(400).send('El tipo de producto no existe')
+    }
+
+    if (imagen) {
+      try {
+        await cloudinary.v2.uploader.upload(imagen!!, (err, result) => {
+          fs.unlinkSync(imagen)
+          urlImagen = result?.url
+        })
+      } catch (error) {
+        console.error(error)
+
+        return res.status(500).send({ message: 'Error subiendo la imagen' })
+      }
     }
 
     const productoCreado = await ProductoModel.create({
       descripcion,
       nombre,
-      imagen,
+      imagen: urlImagen,
       precio_unitario,
       stock,
-      tipoProducto: tipoProducto._id,
+      tipoProducto: tipoProductoEncontrado._id,
     })
 
     return res.status(201).send(productoCreado)
@@ -103,25 +142,66 @@ export const actualizacionCompleta = async (req: express.Request, res: express.R
   try {
     const { id } = req.params
 
-    const { nombre, descripcion, imagen, precio_unitario, stock, categoria } = req.body
+    const { nombre, descripcion, precio_unitario, stock, tipoProducto } = req.body
 
-    // TODO: Validaciones, getCategoria
+    const imagen = req.file?.path
+    let urlImagen
 
-    const tipoProducto = await TipoProductoModel.findById(categoria)
+    const productoMismoNombre = await ProductoModel.findOne({ nombre: nombre, _id: { $ne: id } })
 
-    if (!tipoProducto) {
+    if (productoMismoNombre) {
+      return res.status(400).send('Ya existe un producto con ese nombre')
+    }
+
+    if (!nombre) {
+      return res.status(400).send('El nombre no puede estar vacío.')
+    }
+
+    if (!descripcion) {
+      return res.status(400).send('La descripción no puede estar vacía.')
+    }
+
+    if (stock < 0) {
+      return res.status(400).send('El stock debe ser mayor que 0.')
+    }
+
+    if (!precio_unitario) {
+      return res.status(400).send('El precio unitario no puede estar vacío.')
+    }
+
+    if (imagen) {
+      try {
+        await cloudinary.v2.uploader.upload(imagen!!, (err, result) => {
+          fs.unlinkSync(imagen)
+          urlImagen = result?.url
+        })
+      } catch (error) {
+        console.error(error)
+
+        return res.status(500).send({ message: 'Error subiendo la imagen' })
+      }
+    }
+
+    const tipoProductoEncontrado = await TipoProductoModel.findById(tipoProducto)
+
+    if (!tipoProductoEncontrado) {
       return res.status(400).send('El tipo de producto no existe')
     }
 
-    const productoModificado = await ProductoModel.findOneAndReplace(
-      { _id: id },
+    const productoModificado = await ProductoModel.updateOne(
       {
-        descripcion,
-        nombre,
-        imagen,
-        precio_unitario,
-        stock,
-        tipoProducto: tipoProducto._id,
+        _id: id,
+        $or: [{ descripcion: { $ne: descripcion } }, { nombre: { $ne: nombre } }, { precio_unitario: { $ne: precio_unitario } }, { imagen: { $ne: urlImagen } }, { stock: { $ne: stock } }, { tipoProducto: { $ne: tipoProductoEncontrado._id } }],
+      },
+      {
+        $set: {
+          descripcion: descripcion,
+          nombre: nombre,
+          precio_unitario: precio_unitario,
+          imagen: urlImagen,
+          stock: stock,
+          tipoProducto: tipoProductoEncontrado._id,
+        },
       }
     )
 
