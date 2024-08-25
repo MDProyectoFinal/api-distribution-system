@@ -33,13 +33,14 @@ export const recuperarTodos = async (req: express.Request, res: express.Response
     nombre: { $regex: busqueda, $options: 'i' },
   })
 
-  const urlConsulta = req.get('Host') + req.originalUrl.split('?').shift()!! + '?'
+  const urlConsulta = req.protocol + '://'+ req.get('Host') + req.originalUrl.split('?').shift()!! + '?'
   const totalPaginas = Math.ceil(total / tamañoPagina)
 
-  const paginaAnterior = numeroPagina > 1 ? crearUrlPaginacion(urlConsulta, new ParametrosConsultaProducto(numeroPagina, busqueda, productos.length), TipoRecursoUri.PAGINA_ANTERIOR) : null
-  const paginaSiguiente = numeroPagina < totalPaginas ? crearUrlPaginacion(urlConsulta, new ParametrosConsultaProducto(numeroPagina, busqueda, productos.length), TipoRecursoUri.PAGINA_SIGUIENTE) : null
+  const paginaAnterior = numeroPagina > 1 ? crearUrlPaginacion(urlConsulta, new ParametrosConsultaProducto(numeroPagina, busqueda, tamañoPagina), TipoRecursoUri.PAGINA_ANTERIOR) : null
+  const paginaSiguiente = numeroPagina < totalPaginas ? crearUrlPaginacion(urlConsulta, new ParametrosConsultaProducto(numeroPagina, busqueda, tamañoPagina), TipoRecursoUri.PAGINA_SIGUIENTE) : null
 
   const metaData = new MetaDataPaginacion(total, tamañoPagina, numeroPagina, totalPaginas, paginaAnterior, paginaSiguiente)
+  res.setHeader('Access-Control-Expose-Headers', 'x-paginacion')
   res.setHeader('x-paginacion', JSON.stringify(metaData))
 
   res.status(200).send(productos)
