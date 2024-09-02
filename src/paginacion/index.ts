@@ -19,7 +19,7 @@ export class InfoLinkPaginacion {
     let qsArray = []
 
     if(this.busqueda){
-      qsArray.push(`busqueda=${this.busqueda}`)
+      qsArray.push(`buscar=${this.busqueda}`)
     }
 
     qsArray.push(`numeroPagina=${this.numeroPagina}`)
