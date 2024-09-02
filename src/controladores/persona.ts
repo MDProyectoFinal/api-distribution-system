@@ -22,7 +22,7 @@ var moment = require('moment');
 
 // const mongoose = require('mongoose'); // Si estás utilizando require
 
-var { guardarUsuario } = require('./usuario');
+var { guardarUsuario, actualizarImagen } = require('./usuario');
 // const { params } = require('../app');
 
 function pruebasPersona( req:any, res:any ){
@@ -162,9 +162,22 @@ async function actualizarPersona( req:any, res:any ){
     try {
         // el new: true, devuelve el usuario actualizado. Si es "false" devuelve el usuario previo a la actualizacion
         const personaActualizada = await PersonaModel.findByIdAndUpdate( personaIdObject.toHexString(), update, { new: true } );
+        var imagenAct = null;
 
         if( personaActualizada ){
-            return res.status(200).send({ personaAct: personaActualizada });
+
+            // Deberia llamar al metodo ActualizarImagen del controlador de usuario
+            //const usuarioEncontrado = await UsuarioModel.findById( personaIdObject.toHexString(), { new: true } );            
+            const data = {
+                imagen: req.body.imagen,
+                idUsuario: req.body.idUsuario
+            }
+            if( req.body.imagen && req.body.imagen != ''){
+                imagenAct = await actualizarImagen(data, res);                
+                console.log({ imagenAct: imagenAct.imagen });
+            }            
+
+            return res.status(200).send({ personaAct: personaActualizada, imagenAct: imagenAct.imagen });
         }else{
             res.status(404).send({ message: 'No se ha podido encontrar y actualizar la persona'});
         }

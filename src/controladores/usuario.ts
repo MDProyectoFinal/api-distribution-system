@@ -286,48 +286,85 @@ async function actualizarUsuario( req:any, res:any ){
     }
 }
 
-function actualizarImagen( req:any, res:any ){
-    var userId = req.params.id;
-    var file_name = 'No subido...';
+async function actualizarImagen( req:any, res:any ){
+    var idUsuario = req.idUsuario;     
+   
+
+    var file_ext_split = req.imagen.split('\.');
+    var file_ext = file_ext_split[1];
     
-    if( req.files ){
-        var file_path = req.files.imagen.path; // Ej.: upload\users\C1K_GEcvY93cdFw-PvB_7kwi.jpg
-        
-        var file_split = file_path.split('\\'); // Devuelve un arrat, usando la Barra(\) como separacion        
-        //VER?
-        var file_name: string = file_split[2];
-        
-        var file_ext_split = file_name.split('\.');
-        var file_ext = file_ext_split[1];
-
-        // console.log(file_ext);
-        
+    if( req.imagen && req.imagen != '' && req.idUsuario ){
         if( file_ext == 'jpg' || file_ext == 'png' || file_ext == 'gif' ){
-            
+
             try {
-
-                UsuarioModel.findByIdAndUpdate(
-                    userId,
-                    { $set: { imagen: file_name.toString() } },
+                const imagenActualziada = UsuarioModel.findByIdAndUpdate(
+                    idUsuario,
+                    { $set: { imagen: req.imagen.toString() } },
                     { new: true }
-                )
-                .then((updatedUser: any) => {
-                    return res.status(200).send({ imagen: file_name, user: updatedUser, message: 'Imagen del usuario actualizada correctamente,' }); 
-                })
-                .catch((error: any) => {
-                    return res.status(500).send({ message: 'Error al actualizar la imagen del usuario' + error });
-                });
+                )               
 
-            } catch (error) {
-                return res.status(500).send({ message: 'Error al buscar el usuario' + error });
-            }
+                // Devolvemos el resultado
+                return imagenActualziada;                
+
+            } catch (error) {               
+                console.log({error: error});
+                throw ErrorPersonalizado.internalServer("Error al buscar el usuario.");                
+                //return res.status(500).send({ message: 'Error al buscar el usuario' + error });
+            }        
         }else{
-            return res.status(200).send({ message: 'Extensión del archivo no valida' });
+            throw ErrorPersonalizado.notFound("Extensión del archivo no valida");
+            //return res.status(200).send({ message: 'Extensión del archivo no valida' });
         };
 
     }else{
-        return res.status(200).send({ message: 'La imagen no ha sido subida' });
+        throw ErrorPersonalizado.notFound("La imagen no ha sido subida");
+        //return res.status(200).send({ message: 'La imagen no ha sido subida' });
     } 
+
+
+
+
+
+
+
+    // if( req.files ){
+    //     var file_path = req.files.imagen.path; // Ej.: upload\users\C1K_GEcvY93cdFw-PvB_7kwi.jpg
+        
+    //     var file_split = file_path.split('\\'); // Devuelve un arrat, usando la Barra(\) como separacion        
+    //     //VER?
+    //     var file_name: string = file_split[2];
+        
+    //     var file_ext_split = file_name.split('\.');
+    //     var file_ext = file_ext_split[1];
+
+    //     // console.log(file_ext);
+        
+    //     if( file_ext == 'jpg' || file_ext == 'png' || file_ext == 'gif' ){
+            
+    //         try {
+
+    //             UsuarioModel.findByIdAndUpdate(
+    //                 userId,
+    //                 { $set: { imagen: file_name.toString() } },
+    //                 { new: true }
+    //             )
+    //             .then((updatedUser: any) => {
+    //                 return res.status(200).send({ imagen: file_name, user: updatedUser, message: 'Imagen del usuario actualizada correctamente,' }); 
+    //             })
+    //             .catch((error: any) => {
+    //                 return res.status(500).send({ message: 'Error al actualizar la imagen del usuario' + error });
+    //             });
+
+    //         } catch (error) {
+    //             return res.status(500).send({ message: 'Error al buscar el usuario' + error });
+    //         }
+    //     }else{
+    //         return res.status(200).send({ message: 'Extensión del archivo no valida' });
+    //     };
+
+    // }else{
+    //     return res.status(200).send({ message: 'La imagen no ha sido subida' });
+    // } 
 }
 
 
