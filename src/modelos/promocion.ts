@@ -1,26 +1,15 @@
 'use strict'
 
 import mongoose from "mongoose";
+import { extendSchema } from "utilidades/extendSchema";
+import { productoSchema } from "./producto";
 
-const promocionSchema = new mongoose.Schema({
-    descripcion: { type: String, required: true },
-    fecha_desde: { type: Date, required: true },
-    fecha_hasta: { type: Date, required: true },
-    estado: { type: String, required: true, default: 'Inactiva' } // Podria ser un bit y tener una clase "tipo_promocion"
-});
+  const promocionSchema = extendSchema(productoSchema, {
+    valor: { type: Number, required: true },
+    tipoPromocion:  { type: mongoose.Types.ObjectId, required: true },
+    fecha_inicio: { type: Date, required: true },
+    fecha_fin: { type: Date, required: true },
+    activo: { type: Boolean, default: true }
+  }  )
 
 export const PromocionModel = mongoose.model('Promocion', promocionSchema);
-
-
-
-// var mongoose = require('mongoose');
-// var Schema = mongoose.Schema;
-
-// var PromocionSchema = Schema({
-//     descripcion: String,
-//     fecha_desde: Date,
-//     fecha_hasta: Date,
-//     estado: String // Podria ser un bit y tener una clase "tipo_promocion"
-// })
-
-// module.exports = mongoose.model('Promocion', PromocionSchema);
