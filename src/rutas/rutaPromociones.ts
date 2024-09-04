@@ -1,7 +1,7 @@
 import express from 'express'
 
 
-import { recuperarTodos, } from './../controladores/controladorPromociones';
+import { recuperarTodos, insertarTipoPromocion} from './../controladores/controladorPromociones';
 
 
 export const router = express.Router();
