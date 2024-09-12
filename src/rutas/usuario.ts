@@ -17,6 +17,7 @@ router.post('/loguear-usuario', UsuarioController.loguearUsuario);
 router.put('/actualizar-usuario/:id', md_aute.asegurarAutenticacion, UsuarioController.actualizarUsuario);
 router.post('/actualizar-imagen-usuario/:id', [md_aute.asegurarAutenticacion, md_subida], UsuarioController.actualizarImagen);
 router.get('/obtener-archivo-imagen/:archivoImagen', UsuarioController.obtenerArchivoImagen);
+router.get('/obtener-avatar-usuario/:idUsuario', UsuarioController.obtenerAvataUsuario);
 router.delete('/eliminar-usuario/:id', md_aute.asegurarAutenticacion, UsuarioController.eliminarUsuario);
 router.get('/obtener-usuarios', UsuarioController.obtenerUsuarios );
 router.get('/obtener-usuario/:id', md_aute.asegurarAutenticacion, UsuarioController.obtenerUsuarioPorId );

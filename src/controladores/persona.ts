@@ -13,6 +13,11 @@ import { UsuarioModel } from '../modelos/usuario';
 
 import { ErrorPersonalizado } from "../dominio/errors/error.personalizado";
 
+import cloudinary from "../servicios/cloudinary.config";  //"./  servicios/cloudinary.config";
+import fs from 'fs'
+
+import { Request, Response } from 'express';
+
 // var fs = require('fs');
 // var path = require('path');
 var moment = require('moment');
@@ -133,21 +138,30 @@ async function obtenerPersona( req:any, res:any ) : Promise<IPersona|undefined>{
     }
 }
 
-async function actualizarPersona( req:any, res:any ){
+async function actualizarPersona( req:express.Request, res:express.Response ){
 
-    debugger;
     const personaId = req.params.id; // de la URL viene
+    const usuarioPersona = req.body.usuarioPersona; // ID del usuario desde el cuerpo de la solicitud    
+    const { nombre, apellido, telefono, direccion } = req.body
 
     // Asegúrate de que userId sea una cadena de 24 caracteres hexadecimales. Porque sin mandamos "1" por ejemplo explota
     if (!/^[0-9a-fA-F]{24}$/.test(personaId)) {
-        // Maneja el caso en el que userId no tiene el formato correcto
+        // Maneja el caso en el que userId no Stiene el formato correcto
         throw new Error( 'El "UserId" no posee el formato correcto (ObjectId) para su búsqueda' );
     }
 
     // Lo convertidos a tupo ObjectId para respetar el tipo de dato en el Model.
     const personaIdObject = new mongoose.Types.ObjectId(personaId);
 
-    var update = req.body;
+    const update = {
+        idUsuario: req.body.idUsuario,
+        id: req.body.id,
+        nombre: req.body.nombre,
+        apellido: req.body.apellido,
+        direccion: req.body.direccion,
+        telefono: req.body.telefono
+    };
+    //var update = req.body.personaEdicion;
 
     // Validamos que por el Body llegue algún campo a actualizar
     if (Object.keys(update).length === 0) {
@@ -155,9 +169,9 @@ async function actualizarPersona( req:any, res:any ){
     }
 
     // Compara los datos guardados del usuario autenticado con el personId enviado. Pepe no puede actualizar datos de Juan
-    if( personaId != req.usuario.persona ){
-        return res.status(500).send({ message: 'No tienes permisos para actualizar este usuario' });
-    }
+    // if( personaId != req.usuario.persona ){
+    //     return res.status(500).send({ message: 'No tienes permisos para actualizar este usuario' });
+    // }
 
     try {
         // el new: true, devuelve el usuario actualizado. Si es "false" devuelve el usuario previo a la actualizacion
@@ -166,17 +180,32 @@ async function actualizarPersona( req:any, res:any ){
 
         if( personaActualizada ){
 
+            //#region Subida imagen
+                // Manejar el archivo subido usando Multer
+                const imagenPath = req.file?.path;
+                if (!imagenPath) throw ErrorPersonalizado.notFound("No se subió una imagen para actualizar");                
+                
+                // Subir la imagen a Cloudinary
+                const result = await cloudinary.v2.uploader.upload(imagenPath);
+                if (!result) throw ErrorPersonalizado.badRequest("Error al subir la imagen."); 
+
+                // Eliminar la imagen temporal del servidor
+                fs.unlinkSync(imagenPath);
+
+                // Obtener la URL de la imagen subida en Cloudinary
+                const imagenUrl = result.secure_url
+            //#endregion Subida imagen
+            
             // Deberia llamar al metodo ActualizarImagen del controlador de usuario
             //const usuarioEncontrado = await UsuarioModel.findById( personaIdObject.toHexString(), { new: true } );            
             const data = {
-                imagen: req.body.imagen,
+                imagen: imagenUrl,
                 idUsuario: req.body.idUsuario
             }
-            if( req.body.imagen && req.body.imagen != ''){
-                imagenAct = await actualizarImagen(data, res);                
-                console.log({ imagenAct: imagenAct.imagen });
-            }            
-
+        
+            imagenAct = await actualizarImagen(data, res);                
+            console.log({ imagenAct: imagenAct.imagen });
+ 
             return res.status(200).send({ personaAct: personaActualizada, imagenAct: imagenAct.imagen });
         }else{
             res.status(404).send({ message: 'No se ha podido encontrar y actualizar la persona'});

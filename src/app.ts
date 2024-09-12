@@ -7,6 +7,15 @@ import express from 'express';
 var bodyParser = require('body-parser');
 var app = express();
 
+const cors = require('cors');
+
+// Configurar CORS - VER SI ES NECESARIO
+app.use(cors({
+  origin: 'http://localhost:4200',
+  methods: ['GET', 'POST', 'PUT', 'DELETE'],
+  allowedHeaders: ['Content-Type', 'Authorization']
+}));
+
 // Middlewares
 app.use(bodyParser.urlencoded({ extended: true })); // Nos permite el uso de x-www-form-unrencoded de Postman
 app.use(bodyParser.json()); // Convierte a objeto json los datos o peticiones q nos llegan por http
@@ -40,6 +49,5 @@ app.use('/api/clientes', rutaPedidosClientes.router);
 // app.get('/prueba', function(req, res){
 //     res.status(200).send({ message: 'Bienvenido a la app del Proyecto Final de ISI' })
 // });
-
 
 module.exports = app;

@@ -97,7 +97,7 @@ export const insertarProducto = async (req: express.Request, res: express.Respon
 
     if (imagen) {
       try {
-        await cloudinary.v2.uploader.upload(imagen!!, (err, result) => {
+        await cloudinary.v2.uploader.upload(imagen!!, (err:any, result:any) => {
           fs.unlinkSync(imagen)
           urlImagen = result?.url
         })
@@ -172,7 +172,7 @@ export const actualizacionCompleta = async (req: express.Request, res: express.R
 
     if (imagen) {
       try {
-        await cloudinary.v2.uploader.upload(imagen!!, (err, result) => {
+        await cloudinary.v2.uploader.upload(imagen!!, (err:any, result:any) => {
           fs.unlinkSync(imagen)
           urlImagen = result?.url
         })
