@@ -10,7 +10,7 @@ import { Request, Response } from 'express';
 // var Usuario = require('../modelos/usuario')  //('../modelos/usuario')
 // var Persona = require('../modelos/persona');
 import { PersonaModel } from '../modelos/persona';
-import { UsuarioModel } from '../modelos/usuario';
+import { IUsuario, UsuarioModel } from '../modelos/usuario';
 
 
 var jwt = require('../servicios/jwt');
@@ -21,6 +21,7 @@ import { RegistroUsuarioDto } from '../dominio/dtos/auth/registro-usuario-dto';
 import { ErrorPersonalizado } from "../dominio/errors/error.personalizado";
 import { bcryptAdapter } from '../config';
 import { LoginUsuarioDto } from '../dominio';
+import express from 'express';
 
 
 async function pruebasControlador( req: Request, res: Response ){
@@ -291,20 +292,20 @@ async function actualizarImagen( req:any, res:any ){
    
 
     var file_ext_split = req.imagen.split('\.');
-    var file_ext = file_ext_split[1];
+    var file_ext = file_ext_split[file_ext_split.length - 1];
     
     if( req.imagen && req.imagen != '' && req.idUsuario ){
         if( file_ext == 'jpg' || file_ext == 'png' || file_ext == 'gif' ){
 
             try {
-                const imagenActualziada = UsuarioModel.findByIdAndUpdate(
+                const imagenActualizada = UsuarioModel.findByIdAndUpdate(
                     idUsuario,
                     { $set: { imagen: req.imagen.toString() } },
                     { new: true }
                 )               
 
                 // Devolvemos el resultado
-                return imagenActualziada;                
+                return imagenActualizada;                
 
             } catch (error) {               
                 console.log({error: error});
@@ -367,8 +368,22 @@ async function actualizarImagen( req:any, res:any ){
     // } 
 }
 
+async function obtenerAvataUsuario(req: express.Request, res: express.Response): Promise<string|any>{    
+    try {       
+        // OPCION 2:
+        const usuarioImagen = await UsuarioModel.findById(req.params.idUsuario).select('imagen').exec();
+        if( !usuarioImagen ) throw ErrorPersonalizado.notFound("Error al obtener la imagen del usuario.");
+                
+        res.status(200).json({ imagen: usuarioImagen.imagen });  // Devuelve la imagen al cliente
+        
+    } catch (error) {
+        throw ErrorPersonalizado.badRequest('Error al obtener el avatar del usuario. Error: ' + error);
+        // return res.status(500).send({ message: 'Error al obtener el avatar del usuario. Error: ' + error });
+    }
+}
 
 function obtenerArchivoImagen(req:any, res:any){
+    
     var imageFile = req.params.archivoImagen;
 
     var path_file = './subidas/usuarios/' + imageFile;
@@ -381,6 +396,8 @@ function obtenerArchivoImagen(req:any, res:any){
     }
 
 }
+
+
 
 async function eliminarUsuario( req: Request, res: Response )
 {
@@ -458,7 +475,7 @@ async function obtenerUsuarios( req:any, res:any ){
     }
 }
 
-async function obtenerUsuarioPorId( req: Request, res: Response ){
+async function obtenerUsuarioPorId( req: Request, res: Response ): Promise<IUsuario|any>{
 
     var userId = req.params.id; // de la URL viene
     var update = req.body;
@@ -477,14 +494,14 @@ async function obtenerUsuarioPorId( req: Request, res: Response ){
         //const usuarioEncontrado2 = await UsuarioModel.find({ "_id": userIdObject });        
         const usuarioEncontrado = await UsuarioModel.findById( userIdObject );
 
-        if( !usuarioEncontrado ){
-            return res.status(404).send({ message: 'Usuario no existe' });
-        }
-            
-        return res.status(200).send({ user: usuarioEncontrado, message: 'Usuario encontrado' });        
+        if ( !usuarioEncontrado ) throw ErrorPersonalizado.notFound('Usuario no existe');
+                
+        return usuarioEncontrado as IUsuario;
+        // return res.status(200).send({ user: usuarioEncontrado, message: 'Usuario encontrado' });        
 
     } catch (error: any) {
-        return res.status(500).send({ message: 'Error al obtener el usuario', error: error.message });
+        throw ErrorPersonalizado.badRequest('Error al obtener el usuario. Error: ' + error.message)
+        //return res.status(500).send({ message: 'Error al obtener el usuario', error: error.message });
     }
 }
 
@@ -527,5 +544,6 @@ module.exports = {
     eliminarUsuario,
     obtenerUsuarios,
     obtenerUsuarioPorId,
-    obtenerUsuarioPorNombreUsuario
+    obtenerUsuarioPorNombreUsuario,
+    obtenerAvataUsuario
 };
