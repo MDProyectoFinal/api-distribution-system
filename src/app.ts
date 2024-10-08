@@ -38,7 +38,7 @@ app.use('/api/tiposProductos', rutaTipoProducto.router);
 app.use('/api/productos', rutaProducto.router);
 app.use('/api/pedidos', rutaPedidos.router);
 app.use('/api/clientes', rutaPedidosClientes.router);
-app.use('/api/promociones', rutaPromociones.router);
+app.use('/api/productos/', rutaPromociones.router);
 // app.get('/prueba', function(req, res){
 //     res.status(200).send({ message: 'Bienvenido a la app del Proyecto Final de ISI' })
 // });
