@@ -1,12 +1,11 @@
 import express from 'express'
-import multer from 'multer'
 import cloudinary from '../servicios/cloudinary.config'
 import { crearUrlPaginacion, MAX_TAMAÑO_PAGINA, MetaDataPaginacion, TipoRecursoUri } from './../paginacion/index'
 import ParametrosConsultaProducto from './../paginacion/parametrosConsultaProductos'
 import { ProductoModel } from './../modelos/producto'
 import { TipoProductoModel } from './../modelos/tipoProducto'
 import fs from 'fs'
-import { LogModel } from 'modelos/log'
+import { ProductoConPromocionDTO } from 'dominio/dtos/productos/producto-promocion'
 
 export const recuperarTodos = async (req: express.Request, res: express.Response) => {
   const numeroPagina = parseInt(req.query.numeroPagina as string) || 1
@@ -55,8 +54,34 @@ export const recuperarPorId = async (req: express.Request, res: express.Response
       return res.status(404)
     }
 
-    return res.send(producto)
+
+    const fechaActual = new Date();
+    const promocionActiva = producto.promociones.find((promocion) => {
+      return (
+        promocion.activa &&
+        promocion.fecha_inicio <= fechaActual &&
+        (promocion.fecha_fin === null || promocion.fecha_fin >= fechaActual)
+      );
+    });
+
+
+    const productoDTO: ProductoConPromocionDTO = {
+      _id: producto._id,
+      nombre: producto.nombre,
+      descripcion: producto.descripcion,
+      imagen: producto.imagen,
+      precio_unitario: producto.precio_unitario,
+      stock: producto.stock,
+      tipoProducto: producto.tipoProducto,
+      promocionActiva,
+    };
+
+
+    return res.send(productoDTO)
   } catch (error) {
+    console.error(error);
+
+
     return res.sendStatus(500)
   }
 }
