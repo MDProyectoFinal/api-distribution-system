@@ -11,7 +11,7 @@ const promocionSchema = new mongoose.Schema<Promocion>({
   export interface Promocion {
     _id?: mongoose.Types.ObjectId
     fecha_inicio: Date
-    fecha_fin: Date | null
+    fecha_fin: Date
     precio: number
     activa: boolean
   }

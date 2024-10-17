@@ -2,10 +2,12 @@ import express from 'express'
 import { ProductoModel } from './../modelos/producto'
 import { PromocionModel, Promocion } from './../modelos/promocion'
 import mongoose from 'mongoose'
+import { log } from 'console'
+import moment from 'moment'
 
 export const insertarPromocion = async (req: express.Request, res: express.Response) => {
   try {
-    const { fechaInicio, fechaFin, precio } = req.body
+    const { fecha_inicio, fecha_fin, precio } = req.body
     const { idProducto } = req.params
 
     const producto = await ProductoModel.findById(idProducto)
@@ -15,17 +17,26 @@ export const insertarPromocion = async (req: express.Request, res: express.Respo
     }
 
     const nuevaPromocion: Promocion = {
-      fecha_inicio: fechaInicio,
-      fecha_fin: fechaFin,
+      fecha_inicio: fecha_inicio,
+      fecha_fin: fecha_fin,
       precio: precio,
       activa: true,
     }
 
     const promocionesEnRangoFecha = producto.promociones.filter((promocion) => {
-      const fechaFinPromocion = promocion.fecha_fin || new Date('9999-12-31')
-      const fechaFinNuevaPromocion = nuevaPromocion.fecha_fin || new Date('9999-12-31')
+      const fechaInicioPromocion = moment(promocion.fecha_inicio)
+      const fechaFinPromocion = moment(promocion.fecha_fin)
 
-      return (promocion.activa && promocion.fecha_inicio <= nuevaPromocion.fecha_inicio && fechaFinPromocion >= nuevaPromocion.fecha_inicio) || (promocion.fecha_inicio <= fechaFinNuevaPromocion && fechaFinPromocion >= fechaFinNuevaPromocion) || (promocion.fecha_inicio >= nuevaPromocion.fecha_inicio && fechaFinPromocion <= fechaFinNuevaPromocion)
+      const fechaInicioNuevaPromocion = moment(nuevaPromocion.fecha_fin)
+      const fechaFinNuevaPromocion = moment(nuevaPromocion.fecha_fin)
+
+      const solapadaInicioNueva = fechaInicioNuevaPromocion.isBetween(fechaInicioPromocion, fechaFinPromocion)
+      const solapadaFinNueva = fechaFinNuevaPromocion.isBetween(fechaInicioPromocion, fechaFinPromocion)
+
+      const solapadaInicioActual = fechaInicioPromocion.isBetween(fechaInicioNuevaPromocion, fechaFinNuevaPromocion)
+      const solapadaFinActual = fechaFinPromocion.isBetween(fechaInicioNuevaPromocion, fechaFinNuevaPromocion)
+
+      return promocion.activa && (solapadaInicioNueva || solapadaFinNueva || solapadaInicioActual || solapadaFinActual)
     })
 
     if (promocionesEnRangoFecha.length > 0) {
@@ -60,7 +71,7 @@ export const recuperarPorId = async (req: express.Request, res: express.Response
   return res.sendStatus(200).json(promocion)
 }
 
-export const actualizararPromocion = async (req: express.Request, res: express.Response) => {
+export const actualizarPromocion = async (req: express.Request, res: express.Response) => {
   const { idProducto, idPromocion } = req.params
 
   const { fecha_inicio, fecha_fin, precio, activa } = req.body
@@ -80,14 +91,19 @@ export const actualizararPromocion = async (req: express.Request, res: express.R
   const idPromoObjId = new mongoose.Types.ObjectId(idPromocion)
 
   const promocionesEnRangoFecha = producto.promociones.filter((promocion) => {
-    const fechaFinPromocion = promocion.fecha_fin || new Date('9999-12-31')
-    const fechaFinNuevaPromocion = fecha_fin || new Date('9999-12-31')
+    const fechaInicioPromocion = moment(promocion.fecha_inicio)
+    const fechaFinPromocion = moment(promocion.fecha_fin)
 
-    const fechaInicioDentroDeLaPromocion = promocion.fecha_inicio <= fecha_inicio && fechaFinPromocion >= fecha_inicio
-    const fechaFinDentroDeLaPromocion = promocion.fecha_inicio <= fechaFinNuevaPromocion && fechaFinPromocion >= fechaFinNuevaPromocion
-    const fechaPromocionSuperpuesta = promocion.fecha_inicio >= fecha_inicio && fechaFinPromocion <= fechaFinNuevaPromocion
+    const fechaInicioNueva = moment(fecha_fin)
+    const fechaFinNueva = moment(fecha_fin)
 
-    return promocion._id !== idPromoObjId && (fechaInicioDentroDeLaPromocion || fechaFinDentroDeLaPromocion || fechaPromocionSuperpuesta)
+    const solapadaInicioNueva = fechaInicioNueva.isBetween(fechaInicioPromocion, fechaFinPromocion)
+    const solapadaFinNueva = fechaFinNueva.isBetween(fechaInicioPromocion, fechaFinPromocion)
+
+    const solapadaInicioActual = fechaInicioPromocion.isBetween(fechaInicioNueva, fechaFinNueva)
+    const solapadaFinActual = fechaFinPromocion.isBetween(fechaInicioNueva, fechaFinNueva)
+
+    return promocion._id !== idPromoObjId && promocion.activa && (solapadaInicioNueva || solapadaFinNueva || solapadaInicioActual || solapadaFinActual)
   })
 
   if (promocionesEnRangoFecha.length > 0) {
@@ -109,4 +125,15 @@ export const actualizararPromocion = async (req: express.Request, res: express.R
   )
 
   return res.sendStatus(204)
+}
+
+export const recuperarTodasPorProducto = async (req: express.Request, res: express.Response) => {
+  const { idProducto } = req.params
+  const producto = await ProductoModel.findById(idProducto)
+
+  if (!producto) {
+    return res.status(400).json({ message: 'Producto no encontrado' })
+  }
+
+  return res.status(200).json(producto)
 }
