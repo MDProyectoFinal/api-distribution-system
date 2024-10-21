@@ -3,10 +3,15 @@ import express from 'express'
 import { UsuarioModel } from '../modelos/usuario'
 import { ProductoModel } from '../modelos/producto'
 import { isValidObjectId } from 'mongoose'
+import { ErrorPersonalizado } from '../dominio'
 
 export const recuperarTodos = async (req: express.Request, res: express.Response) => {
 
     const pedidos = await PedidoModel.find()
+      .populate('cliente', 'nombre_usuario') // Obtiene solo nombre de usuario.
+      // .populate('cliente', 'nombre_usuario email') Ej.: para traer otros campos
+      .populate('items.idProducto', 'descripcion'); // Obtiene solo la descripción del producto
+
     return res.status(200).json(pedidos)
 }
 
@@ -21,6 +26,41 @@ export const recuperarPorId = async (req: express.Request, res: express.Response
     }
 
     return res.status(200).json(pedido)
+}
+
+export const recuperarPorFiltros = async (req: express.Request, res: express.Response) => {
+
+  const { idPedido, estado, fechaDesde, fechaHasta, cliente } = req.body
+  console.log( idPedido, estado, fechaDesde, fechaHasta, cliente );
+
+   // Define filtro como un objeto que puede tener cualquier propiedad
+  const filtro: { [key: string]: any } = {};
+
+   // Agregamos filtros solo si están definidos
+  if (idPedido) filtro.idPedido = idPedido; // Asumiendo que este es un campo en tu modelo  
+  if (cliente) filtro.cliente = cliente; // ObjectId del cliente
+  if (estado) filtro.estado = estado; // Estado del pedido 
+  if (fechaDesde || fechaHasta) {
+    // Creamos el filtro para fechas, usando fechaDesde y fechaHasta
+    filtro.fechaAlta = {}; // En mi modelo, se llama "fechaAlta".
+    if (fechaDesde) {
+      filtro.fechaAlta.$gte = new Date(fechaDesde); // Mayor o igual a fechaDesde
+    }
+    if (fechaHasta) {
+      filtro.fechaAlta.$lte = new Date(fechaHasta); // Menor o igual a fechaHasta
+    }
+  }
+
+  try{
+    const pedidos = await PedidoModel.find(filtro)
+    .populate('cliente', 'nombre_usuario') // Obtiene solo nombre de usuario.      
+    .populate('items.idProducto', 'descripcion'); // Obtiene solo la descripción del producto
+
+    return res.status(200).json(pedidos);
+
+  }catch( error ){
+    return ErrorPersonalizado.notFound("Error al tratar de obtener los pedidos");
+  }
 }
 
 export const insertarPedido = async (req: express.Request, res: express.Response) => {

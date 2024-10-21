@@ -1,11 +1,12 @@
 import express from 'express'
 
-import { recuperarTodos, recuperarPorId, insertarPedido, eliminarPorId, actualizacionCompleta, actualizacionParcial } from './../controladores/controladorPedido'
+import { recuperarTodos, recuperarPorId, insertarPedido, eliminarPorId, actualizacionCompleta, actualizacionParcial, recuperarPorFiltros } from './../controladores/controladorPedido'
 import { validarExisteUsuarioBody } from "./../middlewares/existeUsuarioMiddleware";
 
 export const router = express.Router()
 
 router.get('/', recuperarTodos)
+router.post('/filtrar', recuperarPorFiltros)
 router.get('/:idPedido', recuperarPorId)
 //router.post('/', validarExisteUsuarioBody, insertarPedido)
 router.post('/', insertarPedido)
