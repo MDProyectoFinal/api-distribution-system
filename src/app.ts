@@ -27,6 +27,7 @@ const rutaTipoProducto = require('./rutas/rutaTipoProducto')
 const rutaProducto = require('./rutas/rutaProducto')
 const rutaPedidos = require('./rutas/rutaPedidos')
 const rutaPedidosClientes = require('./rutas/rutaPedidosClientes')
+const rutaPromociones = require('./rutas/rutaPromociones')
 
 // Configurar cabeceras http (Para evitar controles de aceso)
 app.use( ( req: any, res: any, next: any ) => {
@@ -46,6 +47,7 @@ app.use('/api/tiposProductos', rutaTipoProducto.router);
 app.use('/api/productos', rutaProducto.router);
 app.use('/api/pedidos', rutaPedidos.router);
 app.use('/api/clientes', rutaPedidosClientes.router);
+app.use('/api/productos/', rutaPromociones.router);
 // app.get('/prueba', function(req, res){
 //     res.status(200).send({ message: 'Bienvenido a la app del Proyecto Final de ISI' })
 // });
