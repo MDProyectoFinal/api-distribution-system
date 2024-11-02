@@ -10,7 +10,7 @@ export const recuperarTodos = async (req: express.Request, res: express.Response
     const pedidos = await PedidoModel.find()
       .populate('cliente', 'nombre_usuario') // Obtiene solo nombre de usuario.
       // .populate('cliente', 'nombre_usuario email') Ej.: para traer otros campos
-      .populate('items.idProducto', 'descripcion'); // Obtiene solo la descripción del producto
+      .populate('items.idProducto', 'descripcion imagen'); // Obtiene solo la descripción del producto
 
     return res.status(200).json(pedidos)
 }
@@ -54,7 +54,7 @@ export const recuperarPorFiltros = async (req: express.Request, res: express.Res
   try{
     const pedidos = await PedidoModel.find(filtro)
     .populate('cliente', 'nombre_usuario') // Obtiene solo nombre de usuario.      
-    .populate('items.idProducto', 'descripcion'); // Obtiene solo la descripción del producto
+    .populate('items.idProducto', 'descripcion imagen'); // Obtiene solo la descripción del producto
 
     return res.status(200).json(pedidos);
 
@@ -102,6 +102,29 @@ export const insertarPedido = async (req: express.Request, res: express.Response
 }
 
 export const eliminarPorId = async (req: express.Request, res: express.Response) => {}
+
+export const cambiarEstadoPorIdPedido = async (req: express.Request, res: express.Response) => {
+
+  try {
+    
+    const { idPedido } = req.params;  // ID personalizado del pedido
+    const { estadoNuevo } = req.body;  // Estado nuevo a actualizar
+
+    const pedidoActualizado = await PedidoModel.findOneAndUpdate(
+      { idPedido },  // Condición de búsqueda
+      { estado: estadoNuevo },    // Campo a actualizar
+      { new: true }  // Retorna el documento actualizado
+    );
+
+      if(!pedidoActualizado) return ErrorPersonalizado.notFound("No se encontró un pedido al cual cambiarle el estado.");                
+          
+    return res.status(200).send({ pedidoActualizado: pedidoActualizado });
+
+  } catch (error) {
+    return ErrorPersonalizado.badRequest("Error al cambiar el estado del pedido.");                
+  }
+
+}
 
 export const actualizacionCompleta = async (req: express.Request, res: express.Response) => {}
 
