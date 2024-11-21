@@ -32,6 +32,32 @@ export const recuperarTodos = async (req: express.Request, res: express.Response
     nombre: { $regex: busqueda, $options: 'i' },
   })
 
+  const fechaActual = new Date();
+  let dtos = productos.map(producto =>{
+
+    const promocionActiva = producto.promociones.find((promocion) => {
+      return (
+        promocion.activa &&
+        promocion.fecha_inicio <= fechaActual &&
+        (promocion.fecha_fin === null || promocion.fecha_fin >= fechaActual)
+      );
+    });
+
+    const productoDTO: ProductoConPromocionDTO = {
+      _id: producto._id,
+      nombre: producto.nombre,
+      descripcion: producto.descripcion,
+      imagen: producto.imagen,
+      precio_unitario: producto.precio_unitario,
+      stock: producto.stock,
+      tipoProducto: producto.tipoProducto,
+      promocionActiva,
+    };
+
+    return productoDTO
+
+  })
+
   const urlConsulta = req.protocol + '://'+ req.get('Host') + req.originalUrl.split('?').shift()!! + '?'
   const totalPaginas = Math.ceil(total / tamañoPagina)
 
@@ -42,7 +68,7 @@ export const recuperarTodos = async (req: express.Request, res: express.Response
   res.setHeader('Access-Control-Expose-Headers', 'x-paginacion')
   res.setHeader('x-paginacion', JSON.stringify(metaData))
 
-  res.status(200).send(productos)
+  res.status(200).send(dtos)
 }
 
 export const recuperarPorId = async (req: express.Request, res: express.Response) => {
