@@ -34,12 +34,12 @@ export const crearPreferenciaPago = async (req: express.Request, res: express.Re
         },
         auto_return: 'approved', // Redirección automática al aprobar el pago
     };
-
-    // VER. YA LO MANDO DEL FRONT
+    
     // Configurar los headers (incluye tu Access Token de Mercado Pago)
+    // TODO: Ver si usamos el "process.env.MP_ACCESS_TOKEN" o el "Headers" recibido del FRONT
     const headers = {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${process.env.MP_ACCESS_TOKEN}`, // Access Token
+        'Content-Type': req.headers['content-type'], // 'application/json',
+        Authorization: req.headers.authorization // `Bearer ${process.env.MP_ACCESS_TOKEN}`, // Access Token
     };
     
     try {    
