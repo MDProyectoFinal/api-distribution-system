@@ -9,15 +9,7 @@ var app = express();
 
 const cors = require('cors');
 
-var mercadopago = require('mercadopago');
-// import mercadopago from 'mercadopago';
 
-// Configuracion Mercado Pago
-mercadopago.accessToken = process.env.MP_ACCESS_TOKEN;
-
-// mercadopago.config({
-//   access_token:  process.env.MP_ACCESS_TOKEN, // Credencial de prueba
-// })
 
 // Configurar CORS - VER SI ES NECESARIO
 app.use(cors({
