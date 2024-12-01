@@ -9,6 +9,8 @@ var app = express();
 
 const cors = require('cors');
 
+
+
 // Configurar CORS - VER SI ES NECESARIO
 app.use(cors({
   origin: 'http://localhost:4200',
@@ -28,6 +30,7 @@ const rutaProducto = require('./rutas/rutaProducto')
 const rutaPedidos = require('./rutas/rutaPedidos')
 const rutaPedidosClientes = require('./rutas/rutaPedidosClientes')
 const rutaPromociones = require('./rutas/rutaPromociones')
+const rutaPago = require('./rutas/rutaPago')
 
 // Configurar cabeceras http (Para evitar controles de aceso)
 app.use( ( req: any, res: any, next: any ) => {
@@ -48,6 +51,7 @@ app.use('/api/productos', rutaProducto.router);
 app.use('/api/pedidos', rutaPedidos.router);
 app.use('/api/clientes', rutaPedidosClientes.router);
 app.use('/api/productos/', rutaPromociones.router);
+app.use('/api/pagos/', rutaPago.router);
 // app.get('/prueba', function(req, res){
 //     res.status(200).send({ message: 'Bienvenido a la app del Proyecto Final de ISI' })
 // });
