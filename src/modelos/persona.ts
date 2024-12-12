@@ -8,7 +8,10 @@ export interface IPersona extends Document {
     apellido: String | null,
     fecha_nacimiento: String | null,
     direccion: String | null,
+    latitud:number |null,
+    longitud:number |null,
     telefono: String | null
+
 }
 
 const PersonaSchema: IPersona = new Schema({
@@ -16,6 +19,8 @@ const PersonaSchema: IPersona = new Schema({
     apellido: { type: String, require: true },
     fecha_nacimiento: { type: String, require: true },
     direccion: { type: String, require: true },
+    latitud: { type: Number, require: true },
+    longitud: { type: Number, require: true },
     telefono: { type: String, require: true }
 })
 
