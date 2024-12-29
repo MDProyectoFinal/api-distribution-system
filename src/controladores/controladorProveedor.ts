@@ -3,6 +3,9 @@ import express from 'express';
 import { ProveedorModel } from '../modelos/proveedor';
 import mongoose from "mongoose";
 
+import PDFDocument from 'pdfkit';
+import { ProductoConPromocionDTO } from "dominio/dtos/productos/producto-promocion";
+
 export const recuperarTodos = async (req: express.Request, res: express.Response) => {
 
     try{
@@ -19,6 +22,95 @@ export const recuperarTodos = async (req: express.Request, res: express.Response
     }  
 
 }
+
+const obtenerFechaActual = () => { 
+    const hoy = new Date(); 
+    const dia = String(hoy.getDate()).padStart(2, '0'); 
+    const mes = String(hoy.getMonth() + 1).padStart(2, '0'); // Los meses empiezan desde 0 
+    const año = hoy.getFullYear(); 
+    
+    return `${dia}-${mes}-${año}`; 
+};
+
+export const generarReporte = async (req: any, res: any) => {
+    
+    try{    
+        const { proveedor, productos } = req.body;
+    
+        const doc = new PDFDocument({ margin: 50 });
+        
+        let filename = `pedido_prov_${ obtenerFechaActual() }.pdf`;
+        res.setHeader('Content-disposition', 'inline; filename="' + filename + '"');
+        res.setHeader('Content-type', 'application/pdf');
+    
+        doc.pipe(res);
+    
+        // Encabezado        
+        doc.image('src/subidas/extras/producto_snack.jpg', 50, 40, { width: 50 }) // Agrega un logo si tienes
+           .fontSize(20)
+           .text('Pedido al Proveedor', 110, 50, { align: 'left' })
+           .moveDown()
+           .fontSize(12)
+           .text(`Fecha: ${obtenerFechaActual()}`, { align: 'right' });
+    
+        let y = 100; // Punto inicial para el texto dinámico
+
+        doc.moveDown()
+           .fontSize(14)
+           .text(`Proveedor: ${proveedor.razon_social}`, 50, y);
+        
+        y += 30; // Mueve hacia abajo después de cada texto
+        doc.moveDown();
+        
+        // Tabla de productos
+        const tableTop = 150;
+        const itemHeight = 20;
+
+        doc.moveDown()
+            .fontSize(12).text('Lista de Productos', 50, y);
+        y += 20; // Espaciado antes de la tabla
+
+        // Encabezados de la tabla
+        doc.fontSize(10)
+            .text('N°', 50, tableTop)
+            .text('Producto', 100, tableTop)
+            .text('Descripción', 250, tableTop)
+            .text('Precio Unitario', 450, tableTop, { align: 'right' });
+            
+        doc.moveDown();
+
+        // Dibujar productos
+        y = tableTop + itemHeight;
+        productos.forEach(( producto: ProductoConPromocionDTO, index: any ) => {
+            doc.fontSize(10)
+                .text(index + 1, 50, y)
+                .text(producto.nombre, 100, y)
+                .text(producto.descripcion, 250, y)
+                .text(`$${producto.precio_unitario.toFixed(2)}`, 450, y, { align: 'right' });
+            y += itemHeight;
+        });
+
+        doc.moveDown();
+
+        // Pie de página
+        const footerTop = y + 50;
+        doc.moveTo(50, footerTop).lineTo(550, footerTop).stroke(); // Línea separadora
+
+        doc.fontSize(10)
+        .text(
+            '*Recuerde imprimir o enviar por correo este ticket al proveedor correspondiente.',
+            50,
+            footerTop + 10,
+            { align: 'center' }
+        );
+
+        doc.end();
+
+    }catch(error: any){        
+        console.log("Error al generar reporte: " + error)
+        throw "Error al generar el reporte del pedido al proveedor: " + error.message;
+    }
+};
 
 export const recuperarPorId = async (req: express.Request, res: express.Response) => {
 
@@ -212,5 +304,6 @@ module.exports = {
     eliminarPorId,
     recuperarTodos,
     recuperarPorId,
-    obtenerProveedoresPorRazonSocial
+    obtenerProveedoresPorRazonSocial,
+    generarReporte
 };
