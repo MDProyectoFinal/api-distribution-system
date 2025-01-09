@@ -141,8 +141,8 @@ async function obtenerPersona( req:any, res:any ) : Promise<IPersona|undefined>{
 async function actualizarPersona( req:express.Request, res:express.Response ){
 
     const personaId = req.params.id; // de la URL viene
-    const usuarioPersona = req.body.usuarioPersona; // ID del usuario desde el cuerpo de la solicitud    
-    const { nombre, apellido, telefono, direccion } = req.body
+    const usuarioPersona = req.body.usuarioPersona; // ID del usuario desde el cuerpo de la solicitud
+    const { nombre, apellido, telefono, direccion, latitud, longitud } = req.body
 
     // Asegúrate de que userId sea una cadena de 24 caracteres hexadecimales. Porque sin mandamos "1" por ejemplo explota
     if (!/^[0-9a-fA-F]{24}$/.test(personaId)) {
@@ -159,7 +159,9 @@ async function actualizarPersona( req:express.Request, res:express.Response ){
         nombre: req.body.nombre,
         apellido: req.body.apellido,
         direccion: req.body.direccion,
-        telefono: req.body.telefono
+        telefono: req.body.telefono,
+        latitud: latitud,
+        longitud: longitud
     };
     //var update = req.body.personaEdicion;
 
@@ -183,11 +185,11 @@ async function actualizarPersona( req:express.Request, res:express.Response ){
             //#region Subida imagen
                 // Manejar el archivo subido usando Multer
                 const imagenPath = req.file?.path;
-                if (!imagenPath) throw ErrorPersonalizado.notFound("No se subió una imagen para actualizar");                
-                
+                if (!imagenPath) throw ErrorPersonalizado.notFound("No se subió una imagen para actualizar");
+
                 // Subir la imagen a Cloudinary
                 const result = await cloudinary.v2.uploader.upload(imagenPath);
-                if (!result) throw ErrorPersonalizado.badRequest("Error al subir la imagen."); 
+                if (!result) throw ErrorPersonalizado.badRequest("Error al subir la imagen.");
 
                 // Eliminar la imagen temporal del servidor
                 fs.unlinkSync(imagenPath);
@@ -195,17 +197,17 @@ async function actualizarPersona( req:express.Request, res:express.Response ){
                 // Obtener la URL de la imagen subida en Cloudinary
                 const imagenUrl = result.secure_url
             //#endregion Subida imagen
-            
+
             // Deberia llamar al metodo ActualizarImagen del controlador de usuario
-            //const usuarioEncontrado = await UsuarioModel.findById( personaIdObject.toHexString(), { new: true } );            
+            //const usuarioEncontrado = await UsuarioModel.findById( personaIdObject.toHexString(), { new: true } );
             const data = {
                 imagen: imagenUrl,
                 idUsuario: req.body.idUsuario
             }
-        
-            imagenAct = await actualizarImagen(data, res);                
+
+            imagenAct = await actualizarImagen(data, res);
             console.log({ imagenAct: imagenAct.imagen });
- 
+
             return res.status(200).send({ personaAct: personaActualizada, imagenAct: imagenAct.imagen });
         }else{
             res.status(404).send({ message: 'No se ha podido encontrar y actualizar la persona'});
