@@ -33,6 +33,9 @@ export const recuperarTodos = async (req: express.Request, res: express.Response
     nombre: { $regex: busqueda, $options: 'i' },
   })
 
+
+  const urlConsulta = req.protocol + '://' + req.get('Host') + req.originalUrl.split('?').shift()!! + '?'
+
   const fechaActual = new Date();
   let dtos = productos.map(producto =>{
 
@@ -58,8 +61,6 @@ export const recuperarTodos = async (req: express.Request, res: express.Response
     return productoDTO
 
   })
-
-  const urlConsulta = req.protocol + '://'+ req.get('Host') + req.originalUrl.split('?').shift()!! + '?'
   const totalPaginas = Math.ceil(total / tamañoPagina)
 
   const paginaAnterior = numeroPagina > 1 ? crearUrlPaginacion(urlConsulta, new ParametrosConsultaProducto(numeroPagina, busqueda, tamañoPagina), TipoRecursoUri.PAGINA_ANTERIOR) : null
@@ -81,16 +82,10 @@ export const recuperarPorId = async (req: express.Request, res: express.Response
       return res.status(404)
     }
 
-
-    const fechaActual = new Date();
+    const fechaActual = new Date()
     const promocionActiva = producto.promociones.find((promocion) => {
-      return (
-        promocion.activa &&
-        promocion.fecha_inicio <= fechaActual &&
-        (promocion.fecha_fin === null || promocion.fecha_fin >= fechaActual)
-      );
-    });
-
+      return promocion.activa && promocion.fecha_inicio <= fechaActual && (promocion.fecha_fin === null || promocion.fecha_fin >= fechaActual)
+    })
 
     const productoDTO: ProductoConPromocionDTO = {
       _id: producto._id,
@@ -99,15 +94,15 @@ export const recuperarPorId = async (req: express.Request, res: express.Response
       imagen: producto.imagen,
       precio_unitario: producto.precio_unitario,
       stock: producto.stock,
+      destacado: producto.destacado,
       tipoProducto: producto.tipoProducto,
       promocionActiva,
-    };
+    }
 
 
     return res.send(productoDTO)
   } catch (error) {
-    console.error(error);
-
+    console.error(error)
 
     return res.sendStatus(500)
   }
@@ -115,7 +110,7 @@ export const recuperarPorId = async (req: express.Request, res: express.Response
 
 export const insertarProducto = async (req: express.Request, res: express.Response) => {
   try {
-    const { nombre, descripcion, precio_unitario, stock, tipoProducto } = req.body
+    const { nombre, descripcion, precio_unitario, stock, tipoProducto, destacado } = req.body
     const imagen = req.file?.path
     let urlImagen
 
@@ -149,7 +144,7 @@ export const insertarProducto = async (req: express.Request, res: express.Respon
 
     if (imagen) {
       try {
-        await cloudinary.v2.uploader.upload(imagen!!, (err:any, result:any) => {
+        await cloudinary.v2.uploader.upload(imagen!!, (err: any, result: any) => {
           fs.unlinkSync(imagen)
           urlImagen = result?.url
         })
@@ -166,6 +161,7 @@ export const insertarProducto = async (req: express.Request, res: express.Respon
       imagen: urlImagen,
       precio_unitario,
       stock,
+      destacado,
       tipoProducto: tipoProductoEncontrado._id,
     })
 
@@ -195,7 +191,7 @@ export const actualizacionCompleta = async (req: express.Request, res: express.R
   try {
     const { id } = req.params
 
-    const { nombre, descripcion, precio_unitario, stock, tipoProducto } = req.body
+    const { nombre, descripcion, precio_unitario, stock, tipoProducto, destacado } = req.body
 
     const imagen = req.file?.path
     let urlImagen
@@ -224,7 +220,7 @@ export const actualizacionCompleta = async (req: express.Request, res: express.R
 
     if (imagen) {
       try {
-        await cloudinary.v2.uploader.upload(imagen!!, (err:any, result:any) => {
+        await cloudinary.v2.uploader.upload(imagen!!, (err: any, result: any) => {
           fs.unlinkSync(imagen)
           urlImagen = result?.url
         })
@@ -241,10 +237,13 @@ export const actualizacionCompleta = async (req: express.Request, res: express.R
       return res.status(400).send('El tipo de producto no existe')
     }
 
+    console.log(destacado);
+
+
     const productoModificado = await ProductoModel.updateOne(
       {
         _id: id,
-        $or: [{ descripcion: { $ne: descripcion } }, { nombre: { $ne: nombre } }, { precio_unitario: { $ne: precio_unitario } }, { imagen: { $ne: urlImagen } }, { stock: { $ne: stock } }, { tipoProducto: { $ne: tipoProductoEncontrado._id } }],
+        $or: [{ descripcion: { $ne: descripcion } }, { nombre: { $ne: nombre } }, { precio_unitario: { $ne: precio_unitario } }, { imagen: { $ne: urlImagen } }, { stock: { $ne: stock } }, { destacado: { $ne: destacado } }, { tipoProducto: { $ne: tipoProductoEncontrado._id } }],
       },
       {
         $set: {
@@ -253,6 +252,7 @@ export const actualizacionCompleta = async (req: express.Request, res: express.R
           precio_unitario: precio_unitario,
           imagen: urlImagen,
           stock: stock,
+          destacado: destacado,
           tipoProducto: tipoProductoEncontrado._id,
         },
       }
