@@ -9,6 +9,7 @@ const productoSchema = new mongoose.Schema<Producto>({
   imagen: { type: String },
   precio_unitario: { type: Number, required: true },
   stock: { type: Number, required: true, default: 0 },
+  destacado: { type: Boolean, required: false, default: false },
   tipoProducto: { type: mongoose.Schema.Types.ObjectId, required: true },
   promociones: [PromocionModel.schema],
 })
@@ -23,7 +24,8 @@ export interface Producto {
   descripcion: string
   imagen?: string
   precio_unitario: number
-  stock: number
+  stock: number,
+  destacado:boolean,
   tipoProducto: mongoose.Types.ObjectId
   promociones: Promocion[]
 }

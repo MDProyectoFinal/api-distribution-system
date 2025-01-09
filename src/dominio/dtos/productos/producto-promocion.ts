@@ -8,6 +8,7 @@ export interface ProductoConPromocionDTO{
     imagen?: string;
     precio_unitario: number;
     stock: number;
+    destacado:boolean;
     tipoProducto: mongoose.Types.ObjectId;
     promocionActiva?: Promocion;
 }
