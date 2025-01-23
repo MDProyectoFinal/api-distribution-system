@@ -54,6 +54,7 @@ export const recuperarTodos = async (req: express.Request, res: express.Response
       imagen: producto.imagen,
       precio_unitario: producto.precio_unitario,
       stock: producto.stock,
+      destacado: producto.destacado,
       tipoProducto: producto.tipoProducto,
       promocionActiva,
     };
