@@ -12,6 +12,8 @@ import { Request, Response } from 'express';
 import { PersonaModel } from '../modelos/persona';
 import { IUsuario, UsuarioModel } from '../modelos/usuario';
 
+const crypto = require('crypto');
+const nodemailer = require('nodemailer'); // Enviar correos electrónicos
 
 var jwt = require('../servicios/jwt');
 
@@ -52,8 +54,7 @@ async function guardarUsuario( req:any, res:any ){
     // Continuamos el circuito anterior normalmente
     var usuario = new UsuarioModel();
     var [persona = null, nombre_usuario = null, clave = null, email = null, rol = null, imagen = null, fecha_registro = new Date(), fecha_ultimo_inicio_sesion = new Date() ] = [null, null, null, null, null, null, null, null];
-        
-    debugger;        
+                
     let fecha_actual: Date | null = new Date();
    
     // Vemos si viene por el body (metodo directo) o si viene desde el "Guardar Persona"
@@ -166,8 +167,7 @@ async function guardarUsuario( req:any, res:any ){
 }
 
 async function loguearUsuario( req:any, res:any ){
-    debugger;
-    
+        
     var params = req.body; // Con bodyParser convierte los objetos a JSON
 
     var email = params.email;
@@ -184,7 +184,7 @@ async function loguearUsuario( req:any, res:any ){
         console.log({user: usuarioEncontrado});
 
         if( !usuarioEncontrado )
-            throw ErrorPersonalizado.badRequest('Usuario y/o Contraseña incorrectas');
+            throw ErrorPersonalizado.badRequest('Usuario y/o Contraseña incorrectos.');
         
         if (usuarioEncontrado.clave !== null && usuarioEncontrado.clave !== undefined) {
 
@@ -238,13 +238,13 @@ async function loguearUsuario( req:any, res:any ){
         // });
         
 
-    } catch (error: any) {
-        debugger;
+    } catch (error: any) {        
         return res.status(500).send({ error: error, message: error.message });
     }
 }
 
 async function actualizarUsuario( req:any, res:any ){
+    
     
     var userId = req.params.id; // de la URL viene
 
@@ -290,7 +290,6 @@ async function actualizarUsuario( req:any, res:any ){
 async function actualizarImagen( req:any, res:any ){
     var idUsuario = req.idUsuario;     
    
-
     var file_ext_split = req.imagen.split('\.');
     var file_ext = file_ext_split[file_ext_split.length - 1];
     
@@ -371,9 +370,13 @@ async function actualizarImagen( req:any, res:any ){
 async function obtenerAvataUsuario(req: express.Request, res: express.Response): Promise<string|any>{    
     try {       
         // OPCION 2:
-        const usuarioImagen = await UsuarioModel.findById(req.params.idUsuario).select('imagen').exec();
+        const usuarioImagen =   await UsuarioModel.findById(req.params.idUsuario).select('imagen').exec();
         if( !usuarioImagen ) throw ErrorPersonalizado.notFound("Error al obtener la imagen del usuario.");
                 
+        if( usuarioImagen.imagen === 'null' || usuarioImagen.imagen === null || usuarioImagen.imagen === ''){
+            usuarioImagen.imagen = 'https://res.cloudinary.com/frlv73/image/upload/v1737894126/pznyvwuw1cpwcwls5j5z.jpg';
+        }
+
         res.status(200).json({ imagen: usuarioImagen.imagen });  // Devuelve la imagen al cliente
         
     } catch (error) {
@@ -397,7 +400,86 @@ function obtenerArchivoImagen(req:any, res:any){
 
 }
 
+async function olvideMiPassword(req: express.Request, res: express.Response ){
 
+    const { email } = req.body;
+
+    try {
+           
+        const user = await UsuarioModel.findOne({ email });
+
+        if (!user) {
+        return res.status(404).json({ message: 'Usuario no encontrado.' });
+        }
+
+        // Generamos un token único
+        const token = jwt.createToken( user ); //crypto.randomBytes(32).toString('hex');
+        const tokenExpiration = Date.now() + 3600000; // Token válido por 1 hora
+
+        // Guardar el token en el usuario
+        user.reseteo_password_token = token;
+        user.reseteo_password_expira = tokenExpiration;        
+        if( user.clave ){
+            user.clave = bcryptAdapter.hash( user.clave.toString() );  
+        }              
+
+        // Guardamos el USUARIO
+        const usuarioGuardado = await user.save();
+
+        console.log({ usuarioGuardado: usuarioGuardado });
+
+        // Configurar y enviar el correo
+        const transporter = nodemailer.createTransport({
+        service: 'Gmail',
+        auth: {
+            user: 'proyectofinalisiutn@gmail.com',
+            pass: 'oeol rfgw hzbw axdq' // Contraseña de aplicación generada por gmail
+        }
+        });
+
+        const mailOptions = {
+            from: 'proyectofinalisiutn@gmail.com',
+            to: email,
+            subject: 'Recuperación de Contraseña',   
+            text: `Hola, como estás? :) \n\nHaz clic en el siguiente enlace para recuperar tu contraseña: \nhttp://localhost:4200/reset-password?token=${token}\n\nSi no solicitaste este cambio, ignora este correo.`
+        };
+
+        // Enviamos el mail
+        await transporter.sendMail(mailOptions);
+
+        res.json({ message: 'Correo enviado con éxito.' });
+    } catch (err) {
+        res.status(500).json({ message: 'Error al procesar la solicitud.', error: err });
+    }
+
+
+}
+
+async function resetPassword(req: express.Request, res: express.Response ){
+
+    const { token, nuevaClave } = req.body;
+  
+    try {
+      const user = await UsuarioModel.findOne({
+        reseteo_password_token: token,
+        reseteo_password_expira: { $gt: Date.now() } // Asegurar que el token no haya expirado
+      });
+  
+      if (!user) {
+        return res.status(400).json({ message: 'Token inválido o expirado.' });
+      }
+      
+      // Actualizar la contraseña
+      user.clave = bcryptAdapter.hash(nuevaClave);
+      user.reseteo_password_token = null;
+      user.reseteo_password_expira = null;
+      await user.save();
+  
+      res.json({ message: 'Contraseña actualizada con éxito.' });
+    } catch (err) {
+      res.status(500).json({ message: 'Error al procesar la solicitud.', error: err });
+    }
+  };
 
 async function eliminarUsuario( req: Request, res: Response )
 {
@@ -545,5 +627,7 @@ module.exports = {
     obtenerUsuarios,
     obtenerUsuarioPorId,
     obtenerUsuarioPorNombreUsuario,
-    obtenerAvataUsuario
+    obtenerAvataUsuario,
+    olvideMiPassword,
+    resetPassword,
 };

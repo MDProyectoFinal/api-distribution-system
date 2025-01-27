@@ -14,6 +14,8 @@ export interface IUsuario extends Document {
     fecha_ultimo_inicio_sesion: Date | null,
     baja: boolean | null,
     fecha_baja: Date | null,
+    reseteo_password_token: String | null,
+    reseteo_password_expira: Number | null
 }
 
 //const UsuarioSchema: Schema = new Schema<IUsuario>({
@@ -29,7 +31,8 @@ const UsuarioSchema: Schema = new Schema({
     fecha_registro: { type: Date, default: Date.now }, // Ver si funciona
     fecha_ultimo_inicio_sesion: { type: Date, default: Date.now }, // OJO!!! Ver si funciona
     baja: { type: Boolean, default: false },
-    fecha_baja: { type: Date, default: null }
-
+    fecha_baja: { type: Date, default: null },
+    reseteo_password_token: { type: String, default: '' },
+    reseteo_password_expira: { type: Number, default: null } // VER EL DEFAULT!!
 })
 export const UsuarioModel = mongoose.model<IUsuario>('Usuario', UsuarioSchema);
