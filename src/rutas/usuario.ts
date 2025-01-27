@@ -22,5 +22,8 @@ router.delete('/eliminar-usuario/:id', md_aute.asegurarAutenticacion, UsuarioCon
 router.get('/obtener-usuarios', UsuarioController.obtenerUsuarios );
 router.get('/obtener-usuario/:id', md_aute.asegurarAutenticacion, UsuarioController.obtenerUsuarioPorId );
 router.get('/obtener-usuarios/nombre/:nombreUsuario', md_aute.asegurarAutenticacion, UsuarioController.obtenerUsuarioPorNombreUsuario );
+router.post('/olvide-mi-password', UsuarioController.olvideMiPassword)
+router.post('/reset-password', UsuarioController.resetPassword)
+
 
 // module.exports = router;

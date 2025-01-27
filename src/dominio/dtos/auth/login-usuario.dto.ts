@@ -12,9 +12,9 @@ export class LoginUsuarioDto {
     static create( object: { [key:string]:any } ): [string?, LoginUsuarioDto?] {
         const { email, clave } = object;
 
-        if( !email ) return ['Missing email'];
-        if( !regularExps.email.test( email ) ) return ['Email is not valid'];
-        if ( !clave ) return ['Missing clave'];
+        if( !email ) return ['Email no ingresado.'];
+        if( !regularExps.email.test( email ) ) return ['El formate del email no es valido.'];
+        if ( !clave ) return ['Clave no ingresada'];
         return [undefined, new LoginUsuarioDto( email, clave)]
 
     }
