@@ -8,7 +8,7 @@ import fs from 'fs'
 import { ProductoConPromocionDTO } from 'dominio/dtos/productos/producto-promocion'
 
 export const recuperarTodos = async (req: express.Request, res: express.Response) => {
-   
+
   const numeroPagina = parseInt(req.query.numeroPagina as string) || 1
   let tamañoPagina = parseInt(req.query.tamañoPagina as string) || 10
   const busqueda = (req.query.buscar as string) || ''
@@ -54,6 +54,7 @@ export const recuperarTodos = async (req: express.Request, res: express.Response
       imagen: producto.imagen,
       precio_unitario: producto.precio_unitario,
       stock: producto.stock,
+      destacado:producto.destacado,
       tipoProducto: producto.tipoProducto,
       promocionActiva,
     };
