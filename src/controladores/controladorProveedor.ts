@@ -4,7 +4,7 @@ import { ProveedorModel } from '../modelos/proveedor';
 import mongoose from "mongoose";
 
 import PDFDocument from 'pdfkit';
-import { ProductoConPromocionDTO } from "dominio/dtos/productos/producto-promocion";
+import { ProductoReporteDTO } from "dominio/dtos/productos/producto-reporte";
 
 export const recuperarTodos = async (req: express.Request, res: express.Response) => {
 
@@ -75,18 +75,18 @@ export const generarReporte = async (req: any, res: any) => {
             .text('N°', 50, tableTop)
             .text('Producto', 100, tableTop)
             .text('Descripción', 250, tableTop)
-            .text('Precio Unitario', 450, tableTop, { align: 'right' });
+            .text('Cantidad', 450, tableTop, { align: 'right' });
             
         doc.moveDown();
 
         // Dibujar productos
         y = tableTop + itemHeight;
-        productos.forEach(( producto: ProductoConPromocionDTO, index: any ) => {
+        productos.forEach(( producto: ProductoReporteDTO, index: any ) => {
             doc.fontSize(10)
                 .text(index + 1, 50, y)
                 .text(producto.nombre, 100, y)
                 .text(producto.descripcion, 250, y)
-                .text(`$${producto.precio_unitario.toFixed(2)}`, 450, y, { align: 'right' });
+                .text(producto.cantidad.toString(), 450, y, { align: 'right' });
             y += itemHeight;
         });
 
