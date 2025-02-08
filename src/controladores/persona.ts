@@ -214,7 +214,6 @@ async function actualizarPersona( req:express.Request, res:express.Response ){
                 personaAct: personaActualizada, 
                 imagenAct: imagenAct.imagen
             })  
-           
         }else{
             return res.status(404).send({ message: 'No se ha podido encontrar y actualizar la persona'});
         }
