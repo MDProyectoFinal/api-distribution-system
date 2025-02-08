@@ -26,7 +26,7 @@ const UsuarioSchema: Schema = new Schema({
     nombre_usuario: { type: String, require: [ true, 'Nombre es requerido'] },
     clave: { type: String, require: [ true, 'Clave es requerida'] },
     email: { type: String, require: [ true, 'Email es requerido'], unique: true }, // unique determina q no vamos a tener emails duplicados en BD    
-    rol: { type: String, enum: ['ADMIN','USER'], default: 'USER' }, // VER!! Puede tener mas de un rol a la vez? Debemos usar [String]
+    rol: { type: String, enum: ['ADMIN','CLIENT'], default: 'CLIENT' }, // VER!! Puede tener mas de un rol a la vez? Debemos usar [String]
     imagen: { type: String },
     fecha_registro: { type: Date, default: Date.now }, // Ver si funciona
     fecha_ultimo_inicio_sesion: { type: Date, default: Date.now }, // OJO!!! Ver si funciona

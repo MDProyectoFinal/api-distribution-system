@@ -16,6 +16,8 @@ import { ErrorPersonalizado } from "../dominio/errors/error.personalizado";
 import cloudinary from "../servicios/cloudinary.config";  //"./  servicios/cloudinary.config";
 import fs from 'fs'
 
+var jwt = require('../servicios/jwt');
+
 import { Request, Response } from 'express';
 
 // var fs = require('fs');
@@ -181,38 +183,39 @@ async function actualizarPersona( req:express.Request, res:express.Response ){
         var imagenAct = null;
 
         if( personaActualizada ){
-
-            //#region Subida imagen
-                // Manejar el archivo subido usando Multer
-                const imagenPath = req.file?.path;
-
-                // if (!imagenPath) throw ErrorPersonalizado.notFound("No se subió una imagen para actualizar");
-                if( imagenPath != undefined && imagenPath != '' && imagenPath != null ){
-                    // Subir la imagen a Cloudinary
-                    const result = await cloudinary.v2.uploader.upload(imagenPath);
-                    if (!result) throw ErrorPersonalizado.badRequest("Error al subir la imagen.");
-
-                    // Eliminar la imagen temporal del servidor
-                    fs.unlinkSync(imagenPath);
-
-                    // Obtener la URL de la imagen subida en Cloudinary
-                    const imagenUrl = result.secure_url
-
-                    // Deberia llamar al metodo ActualizarImagen del controlador de usuario
-                    //const usuarioEncontrado = await UsuarioModel.findById( personaIdObject.toHexString(), { new: true } );
-                    const data = {
-                        imagen: imagenUrl,
-                        idUsuario: req.body.idUsuario
-                    }
-
-                    imagenAct = await actualizarImagen(data, res);
-                    console.log({ imagenAct: imagenAct.imagen });
-                }   
-            //#endregion Subida imagen
             
-            return res.status(200).send({ personaAct: personaActualizada }); //, imagenAct: imagenAct.imagen });
+            // Manejar el archivo subido usando Multer
+            const imagenPath = req.file?.path;
+            if (!imagenPath) throw ErrorPersonalizado.notFound("No se subió una imagen para actualizar");
+
+            // Subir la imagen a Cloudinary
+            const result = await cloudinary.v2.uploader.upload(imagenPath);
+            if (!result) throw ErrorPersonalizado.badRequest("Error al subir la imagen.");
+
+            // Eliminar la imagen temporal del servidor
+            fs.unlinkSync(imagenPath);
+
+            // Obtener la URL de la imagen subida en Cloudinary
+            const imagenUrl = result.secure_url
+                        
+            const data = {
+                imagen: imagenUrl,
+                idUsuario: req.body.idUsuario
+            }
+
+            imagenAct = await actualizarImagen(data, res);            
+
+            // Probamos ver de actualizar el token para que actualice la imagen arriba en el NAV
+            let usuarioEncontrado = await UsuarioModel.findOne( { _id: update.idUsuario } );        
+            
+            return res.status(200).send({
+                token: jwt.createToken( usuarioEncontrado ),
+                user: usuarioEncontrado,
+                personaAct: personaActualizada, 
+                imagenAct: imagenAct.imagen
+            })  
         }else{
-            res.status(404).send({ message: 'No se ha podido encontrar y actualizar la persona'});
+            return res.status(404).send({ message: 'No se ha podido encontrar y actualizar la persona'});
         }
 
     } catch (error) {
