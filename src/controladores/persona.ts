@@ -16,6 +16,8 @@ import { ErrorPersonalizado } from "../dominio/errors/error.personalizado";
 import cloudinary from "../servicios/cloudinary.config";  //"./  servicios/cloudinary.config";
 import fs from 'fs'
 
+var jwt = require('../servicios/jwt');
+
 import { Request, Response } from 'express';
 
 // var fs = require('fs');
@@ -208,7 +210,17 @@ async function actualizarPersona( req:express.Request, res:express.Response ){
             imagenAct = await actualizarImagen(data, res);
             console.log({ imagenAct: imagenAct.imagen });
 
-            return res.status(200).send({ personaAct: personaActualizada, imagenAct: imagenAct.imagen });
+
+            // Probamos ver de actualizar el token para que actualice la imagen arriba en el NAV
+            let usuarioEncontrado = await UsuarioModel.findOne( { _id: update.idUsuario } );        
+            
+            res.status(200).send({
+                token: jwt.createToken( usuarioEncontrado ),
+                user: usuarioEncontrado,
+                personaAct: personaActualizada, 
+                imagenAct: imagenAct.imagen
+            })  
+           
         }else{
             res.status(404).send({ message: 'No se ha podido encontrar y actualizar la persona'});
         }
