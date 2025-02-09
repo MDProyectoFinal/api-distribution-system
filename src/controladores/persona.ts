@@ -80,6 +80,8 @@ async function guardarPersona( req:any, res:any ){
     persona.apellido = (params.apellido == null ? params.persona.apellido : params.apellido);
     persona.fecha_nacimiento = (params.fecha_nacimiento == null ? params.persona.fecha_nacimiento : params.fecha_nacimiento);
     persona.direccion = (params.direccion == null ? params.persona.direccion : params.direccion);
+    persona.latitud = (params.latitud == null ? params.persona.latitud : params.latitud);
+    persona.longitud = (params.longitud == null ? params.persona.longitud : params.longitud);
     persona.telefono = (params.telefono == null ? params.persona.telefono : params.telefono);
 
     try {
