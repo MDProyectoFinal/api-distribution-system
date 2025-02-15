@@ -8,11 +8,12 @@ import fs from 'fs'
 import { ProductoConPromocionDTO } from 'dominio/dtos/productos/producto-promocion'
 
 export const recuperarTodos = async (req: express.Request, res: express.Response) => {
-   
   const numeroPagina = parseInt(req.query.numeroPagina as string) || 1
   let tamañoPagina = parseInt(req.query.tamañoPagina as string) || 10
   const busqueda = (req.query.buscar as string) || ''
   const tipo = (req.query.tipo as string) || 'todos'
+  const precioMinimo = parseInt(req.query.precioMinimo as string) || null;
+  const precioMaximo = parseInt(req.query.precioMaximo as string) || null;
 
   if (tamañoPagina > MAX_TAMAÑO_PAGINA) {
     tamañoPagina = MAX_TAMAÑO_PAGINA
@@ -22,6 +23,10 @@ export const recuperarTodos = async (req: express.Request, res: express.Response
 
   const productos = await ProductoModel.find({
     nombre: { $regex: busqueda, $options: 'i' },
+    precio_unitario: {
+      $gte: precioMinimo !== null ? precioMinimo : -Infinity,
+      $lte: precioMaximo !== null ? precioMaximo : Infinity,
+    },
   })
     .where('tipoProducto')
     .in(idsTipos)
