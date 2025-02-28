@@ -20,6 +20,7 @@ export interface Pedido extends Document {
   }
   items: Types.DocumentArray<ItemPedido>
   subtotal: number
+  pagado:boolean
 }
 
 export interface ItemPedido extends Document {
@@ -60,6 +61,10 @@ const pedidoSchema = new mongoose.Schema<Pedido>(
     subtotal: {
       type: Number,
       default: 0,
+    },
+    pagado: {
+      type: Boolean,
+      default: false
     },
   },
 

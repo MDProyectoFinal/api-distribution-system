@@ -68,6 +68,14 @@ export const insertarPedido = async (req: express.Request, res: express.Response
     return res.sendStatus(404).send('El cliente no existe')
   }
 
+
+  const pedidoSinPago = await PedidoModel.findOne({ pagado: false });
+
+  if(pedidoSinPago){
+    return res.status(400).send(`Ya tiene registrado un pedido pendiente de pago (nro: ${pedidoSinPago.idPedido})`)
+  }
+
+
   const nuevoPedido = new PedidoModel()
   nuevoPedido.cliente = usuario._id
 
