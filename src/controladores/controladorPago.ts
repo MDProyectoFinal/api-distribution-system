@@ -137,10 +137,6 @@ export const pagarPedidoExistenteConMP = async (req: express.Request, res: expre
 
 export const registrarPedidoComoPagado = async (req: express.Request, res: express.Response) =>{
     const idPedido = req.params.idPedido
-
-    console.log("Llegamos");
-
-
     const pedido = await PedidoModel.findById(idPedido)
 
     if (!pedido) {
@@ -150,7 +146,7 @@ export const registrarPedidoComoPagado = async (req: express.Request, res: expre
     pedido.pagado = true
     await pedido.save()
 
-    res.status(204);
+    res.sendStatus(204);
 }
 
 export const insertarPedido = async (req: express.Request, res: express.Response) => {
