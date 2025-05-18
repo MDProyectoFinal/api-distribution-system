@@ -30,6 +30,7 @@ export const recuperarTodos = async (req: express.Request, res: express.Response
   })
     .where('tipoProducto')
     .in(idsTipos)
+    .sort('nombre')
     .skip((numeroPagina - 1) * tamañoPagina)
     .limit(tamañoPagina)
 
