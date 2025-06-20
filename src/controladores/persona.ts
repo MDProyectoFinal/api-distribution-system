@@ -188,33 +188,34 @@ async function actualizarPersona( req:express.Request, res:express.Response ){
             
             // Manejar el archivo subido usando Multer
             const imagenPath = req.file?.path;
-            if (!imagenPath) throw ErrorPersonalizado.notFound("No se subió una imagen para actualizar");
+            if (imagenPath != null && imagenPath != undefined){  //throw ErrorPersonalizado.notFound("No se subió una imagen para actualizar");
+                // Subir la imagen a Cloudinary
+                const result = await cloudinary.v2.uploader.upload(imagenPath);
+                if (!result) throw ErrorPersonalizado.badRequest("Error al subir la imagen.");
 
-            // Subir la imagen a Cloudinary
-            const result = await cloudinary.v2.uploader.upload(imagenPath);
-            if (!result) throw ErrorPersonalizado.badRequest("Error al subir la imagen.");
+                // Eliminar la imagen temporal del servidor
+                fs.unlinkSync(imagenPath);
 
-            // Eliminar la imagen temporal del servidor
-            fs.unlinkSync(imagenPath);
+                // Obtener la URL de la imagen subida en Cloudinary
+                const imagenUrl = result.secure_url
+                            
+                const data = {
+                    imagen: imagenUrl,
+                    idUsuario: req.body.idUsuario
+                }
 
-            // Obtener la URL de la imagen subida en Cloudinary
-            const imagenUrl = result.secure_url
-                        
-            const data = {
-                imagen: imagenUrl,
-                idUsuario: req.body.idUsuario
+                imagenAct = await actualizarImagen(data, res);            
+
             }
 
-            imagenAct = await actualizarImagen(data, res);            
-
             // Probamos ver de actualizar el token para que actualice la imagen arriba en el NAV
-            let usuarioEncontrado = await UsuarioModel.findOne( { _id: update.idUsuario } );        
+            let usuarioEncontrado = await UsuarioModel.findOne( { _id: update.idUsuario } );          
             
             return res.status(200).send({
                 token: jwt.createToken( usuarioEncontrado ),
                 user: usuarioEncontrado,
-                personaAct: personaActualizada, 
-                imagenAct: imagenAct.imagen
+                personaAct: personaActualizada
+                //imagenAct: imagenAct.imagen
             })  
         }else{
             return res.status(404).send({ message: 'No se ha podido encontrar y actualizar la persona'});
