@@ -15,26 +15,13 @@ export const crearPreferenciaPago = async (req: express.Request, res: express.Re
 
   // Define la preferencia de pago
   const preference = {
-    payer_email: payer_email, // 'test_user_63594283@testuser.com', Mail del Comprador
+    payer_email: payer_email,
     items: items,
 
-    // TEST -> Para UN producto
-    // items: [
-    //     {
-    //         //id: id,
-    //         // currency_id: currency_id,
-    //         title, // Nombre del producto
-    //         quantity, // Cantidad
-    //         unit_price: price, // Precio por unidad
-    //         description: description,
-    //         picture_url: picture_url,
-    //         category_id: category_id
-    //     },
-    // ],
     back_urls: {
-      success: 'http://localhost:4200/client/pago-success', // 'http://localhost:4200/payment-success',
-      failure: 'http://localhost:4200/client/pago-failure', //'http://localhost:4200/payment-failure',
-      pending: 'http://localhost:4200/client/pago-pending', //'http://localhost:4200/payment-pending',
+      success: 'https://localhost:4200/client/pago-success',
+      failure: 'http://localhost:4200/client/pago-failure',
+      pending: 'http://localhost:4200/client/pago-pending',
     },
     auto_return: 'approved', // Redirección automática al aprobar el pago
   }
@@ -102,9 +89,9 @@ export const pagarPedidoExistenteConMP = async (req: express.Request, res: expre
       items: items,
 
       back_urls: {
-        success: `http://localhost:4200/client/pago-success/?pid=${idPedido}`, // 'http://localhost:4200/payment-success',
-        failure: `http://localhost:4200/client/pago-failure/?pid=${idPedido}`, //'http://localhost:4200/payment-failure',
-        pending: `http://localhost:4200/client/pago-pending/?pid=${idPedido}`, //'http://localhost:4200/payment-pending',
+        success: `https://localhost:4200/client/pago-success/?pid=${idPedido}`,
+        failure: `http://localhost:4200/client/pago-failure/?pid=${idPedido}`,
+        pending: `http://localhost:4200/client/pago-pending/?pid=${idPedido}`,
       },
       auto_return: 'approved',
     }
