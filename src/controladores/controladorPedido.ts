@@ -130,7 +130,7 @@ export const cambiarEstadoPorIdPedido = async (req: express.Request, res: expres
 
     const pedidoActualizado = await PedidoModel.findOneAndUpdate(
       { idPedido }, // Condición de búsqueda
-      { estado: estadoNuevo }, // Campo a actualizar
+      { estado: estadoNuevo.toUpperCase() }, // Campo a actualizar
       { new: true } // Retorna el documento actualizado
     )
 
