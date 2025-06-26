@@ -36,7 +36,7 @@ export const recuperarPorFiltros = async (req: express.Request, res: express.Res
   // Agregamos filtros solo si están definidos
   if (idPedido) filtro.idPedido = idPedido // Asumiendo que este es un campo en tu modelo
   if (cliente) filtro.cliente = cliente // ObjectId del cliente
-  if (estado) filtro.estado = estado // Estado del pedido
+  if (estado) filtro.estado = { $regex: new RegExp(estado, 'i') }; // Estado del pedido
   if (fechaDesde || fechaHasta) {
     // Creamos el filtro para fechas, usando fechaDesde y fechaHasta
     filtro.fechaAlta = {} // En mi modelo, se llama "fechaAlta".
@@ -130,7 +130,7 @@ export const cambiarEstadoPorIdPedido = async (req: express.Request, res: expres
 
     const pedidoActualizado = await PedidoModel.findOneAndUpdate(
       { idPedido }, // Condición de búsqueda
-      { estado: estadoNuevo }, // Campo a actualizar
+      { estado: estadoNuevo.toUpperCase() }, // Campo a actualizar
       { new: true } // Retorna el documento actualizado
     )
 
