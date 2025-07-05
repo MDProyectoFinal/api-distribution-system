@@ -2,7 +2,7 @@ import { ItemPedido, PedidoModel } from './../modelos/pedido'
 import express from 'express'
 import { UsuarioModel } from '../modelos/usuario'
 import { ProductoModel } from '../modelos/producto'
-import { isValidObjectId } from 'mongoose'
+import mongoose, { isValidObjectId } from 'mongoose'
 import { ErrorPersonalizado } from '../dominio'
 
 export const recuperarTodos = async (req: express.Request, res: express.Response) => {
@@ -69,7 +69,10 @@ export const insertarPedido = async (req: express.Request, res: express.Response
   }
 
 
-  const pedidoSinPago = await PedidoModel.findOne({ pagado: false });
+  const pedidoSinPago = await PedidoModel.findOne({ 
+    pagado: false,
+    cliente: new mongoose.Types.ObjectId(idUsuario)
+  });
 
   if(pedidoSinPago){
     return res.status(400).send(`Ya tiene registrado un pedido pendiente de pago (nro: ${pedidoSinPago.idPedido})`)
