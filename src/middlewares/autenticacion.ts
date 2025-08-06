@@ -1,12 +1,14 @@
 'use strict'
 
+import { JwtPayload } from "types/express";
+
 var jwt = require('jwt-simple');
 var moment = require('moment');
 var secret = 'clave_secreta_trabajo_final';
 
 // Metodo que se ejecuta ANTES de la accion del controlador
 exports.asegurarAutenticacion = function( req: any, res: any, next:any ){
-        
+
     // if( !req.headers.autorizacion ){
     if( !req.headers.authorization ){
         return res.status(403).send( { message: 'La petición no tiene la cabecera de autenticación' });
@@ -15,8 +17,8 @@ exports.asegurarAutenticacion = function( req: any, res: any, next:any ){
     var token = req.headers.authorization.replace(/['"]+/g, ''); // Quitamos las comillas
 
     try {
-        var payload = jwt.decode(token, secret);
-        
+        var payload = jwt.decode(token, secret) as JwtPayload;
+
         if( payload.exp <= moment().unix()){
             return res.status(401).send( { message: 'El token ha expirado' });
         }

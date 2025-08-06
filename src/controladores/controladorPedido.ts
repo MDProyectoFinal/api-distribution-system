@@ -69,7 +69,7 @@ export const insertarPedido = async (req: express.Request, res: express.Response
   }
 
 
-  const pedidoSinPago = await PedidoModel.findOne({ 
+  const pedidoSinPago = await PedidoModel.findOne({
     pagado: false,
     cliente: new mongoose.Types.ObjectId(idUsuario)
   });
@@ -120,7 +120,6 @@ export const insertarPedido = async (req: express.Request, res: express.Response
 
   nuevoPedido.items.map((i: ItemPedido) => i.total).forEach((valor: number) => (nuevoPedido.subtotal += valor))
   await nuevoPedido.save()
-
   return res.status(201).json(nuevoPedido.toObject())
 }
 
