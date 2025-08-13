@@ -11,14 +11,3 @@ const tipoProductoSchema = new mongoose.Schema({
 });
 
 export const TipoProductoModel = mongoose.model('TipoProducto', tipoProductoSchema);
-
-
-
-//var mongoose = require('mongoose');
-// var Schema = mongoose.Schema;
-
-// var TipoProductoSchema = Schema({
-//     descripcion: String
-// })
-
-// module.exports = mongoose.model('TipoProducto', TipoProductoSchema);

@@ -9,7 +9,6 @@ var secret = 'clave_secreta_trabajo_final';
 // Metodo que se ejecuta ANTES de la accion del controlador
 exports.asegurarAutenticacion = function( req: any, res: any, next:any ){
 
-    // if( !req.headers.autorizacion ){
     if( !req.headers.authorization ){
         return res.status(403).send( { message: 'La petición no tiene la cabecera de autenticación' });
     }

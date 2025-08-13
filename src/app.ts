@@ -3,7 +3,6 @@
 require('dotenv').config();
 
 import express from 'express';
-//var express = require('express');
 var bodyParser = require('body-parser');
 var app = express();
 
@@ -58,10 +57,5 @@ app.use('/api/pagos/', rutaPago.router);
 app.use('/api/proveedor/', rutaProveedor.router);
 app.use('/api/proveedorProducto/', rutaProveedorProducto.router)
 app.use('/api/soporte', rutaSoporte.router)
-
-
-// app.get('/prueba', function(req, res){
-//     res.status(200).send({ message: 'Bienvenido a la app del Proyecto Final de ISI' })
-// });
 
 module.exports = app;

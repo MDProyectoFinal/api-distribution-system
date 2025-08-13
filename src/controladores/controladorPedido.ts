@@ -8,7 +8,6 @@ import { ErrorPersonalizado } from '../dominio'
 export const recuperarTodos = async (req: express.Request, res: express.Response) => {
   const pedidos = await PedidoModel.find()
     .populate('cliente', 'nombre_usuario') // Obtiene solo nombre de usuario.
-    // .populate('cliente', 'nombre_usuario email') Ej.: para traer otros campos
     .populate('items.idProducto', 'descripcion imagen') // Obtiene solo la descripción del producto
 
   return res.status(200).json(pedidos)
@@ -39,7 +38,7 @@ export const recuperarPorFiltros = async (req: express.Request, res: express.Res
   if (estado) filtro.estado = { $regex: new RegExp(estado, 'i') }; // Estado del pedido
   if (fechaDesde || fechaHasta) {
     // Creamos el filtro para fechas, usando fechaDesde y fechaHasta
-    filtro.fechaAlta = {} // En mi modelo, se llama "fechaAlta".
+    filtro.fechaAlta = {}
     if (fechaDesde) {
       filtro.fechaAlta.$gte = new Date(fechaDesde) // Mayor o igual a fechaDesde
     }

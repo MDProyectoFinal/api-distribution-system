@@ -18,14 +18,12 @@ export interface IUsuario extends Document {
     reseteo_password_expira: Number | null
 }
 
-//const UsuarioSchema: Schema = new Schema<IUsuario>({
-// const UsuarioSchema: IUsuario = new Schema({
 const UsuarioSchema: Schema = new Schema({
     _id: { type: mongoose.Types.ObjectId, auto: true },
     persona: { type: mongoose.Types.ObjectId, require: true }, // { type: Schema.ObjectId, ref: 'Persona' },
     nombre_usuario: { type: String, require: [ true, 'Nombre es requerido'] },
     clave: { type: String, require: [ true, 'Clave es requerida'] },
-    email: { type: String, require: [ true, 'Email es requerido'], unique: true }, // unique determina q no vamos a tener emails duplicados en BD    
+    email: { type: String, require: [ true, 'Email es requerido'], unique: true }, // unique determina q no vamos a tener emails duplicados en BD
     rol: { type: String, enum: ['ADMIN','CLIENT'], default: 'CLIENT' }, // VER!! Puede tener mas de un rol a la vez? Debemos usar [String]
     imagen: { type: String },
     fecha_registro: { type: Date, default: Date.now }, // Ver si funciona

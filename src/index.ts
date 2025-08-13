@@ -11,9 +11,6 @@ var { LogController } = require('./controladores/log');
 mongoose.Promise = global.Promise;
 mongoose.set('strictQuery', false);
 
-// Conectar local a mi Mongo DB
-//mongoose.connect('mongodb://0.0.0.0:27017/rosario_snack').then(
-
 // Conectar Mongo DB Atlas Free Online
 mongoose.connect(process.env.MONGO_URL_LOCAL).then(
     async () => {
@@ -33,7 +30,6 @@ mongoose.connect(process.env.MONGO_URL_LOCAL).then(
                 creacion: new Date()
             };
             await LogController.guardarLog(newLog);
-            // await LogController.obtenerLogs(); -> Para obtener todos. Luego borrar esta linea!!
 
         } catch (error) {
             console.error('Error al guardar el log:', error);
