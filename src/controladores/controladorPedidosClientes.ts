@@ -23,7 +23,7 @@ export const recuperarPorId = async (req: express.Request, res: express.Response
 }
 
 export const insertarPedido = async (req: express.Request, res: express.Response) => {
-  const { productos } = req.body
+  const { productos, pedidoPagado } = req.body
   const {idCliente} = req.params
 
   const usuario = await UsuarioModel.findById(idCliente)
@@ -34,13 +34,13 @@ export const insertarPedido = async (req: express.Request, res: express.Response
   }
 
   /* Control de existencia de "pedido pendiente de pago" para usuario actual */
-  const pedidoSinPago = await PedidoModel.findOne({ 
+  const pedidoSinPagoExistente = await PedidoModel.findOne({
       pagado: false,
       cliente: new mongoose.Types.ObjectId(idCliente)
   });
 
-  if(pedidoSinPago){
-    return res.status(400).send(`Ya tiene registrado un pedido pendiente de pago (nro: ${pedidoSinPago.idPedido})`)
+  if(pedidoSinPagoExistente && pedidoPagado === false){
+    return res.status(400).send(`Ya tiene registrado un pedido pendiente de pago (nro: ${pedidoSinPagoExistente.idPedido})`)
   }
 
   const nuevoPedido = new PedidoModel()
