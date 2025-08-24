@@ -12,7 +12,7 @@ const md_captcha = require('../middlewares/validadorCaptcha');
 
 export const router = express.Router();
 
-router.get('/probando-controlador', UsuarioController.pruebasControlador);
+//router.get('/probando-controlador', UsuarioController.pruebasControlador);
 router.post('/guardar-usuario', UsuarioController.guardarUsuario);
 router.post('/loguear-usuario', md_captcha.verificarCaptcha('login', 0.5),  UsuarioController.loguearUsuario);
 router.put('/actualizar-usuario/:id', md_aute.asegurarAutenticacion, UsuarioController.actualizarUsuario);
