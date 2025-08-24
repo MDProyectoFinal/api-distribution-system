@@ -88,6 +88,7 @@ export const insertarPedido = async (req: express.Request, res: express.Response
   }
 
   nuevoPedido.items.map((i: ItemPedido) => i.total).forEach((valor: number) => (nuevoPedido.subtotal += valor))
+  nuevoPedido.pagado = pedidoPagado
   await nuevoPedido.save()
 
   return res.status(201).json(nuevoPedido.toObject())
