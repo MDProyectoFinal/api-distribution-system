@@ -25,5 +25,3 @@ const PersonaSchema: IPersona = new Schema({
 })
 
 export const PersonaModel = mongoose.model('Persona', PersonaSchema);
-
-// module.exports = mongoose.model('Persona', PersonaSchema);

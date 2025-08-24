@@ -5,7 +5,6 @@ export const recuperarTodos = async (
   req: express.Request,
   res: express.Response
 ) => {
-  //TODO: Filtrar
 
   const todosTIposProductos = await TipoProductoModel.find()
   return res.send(todosTIposProductos)

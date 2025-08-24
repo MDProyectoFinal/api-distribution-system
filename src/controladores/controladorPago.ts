@@ -6,8 +6,6 @@ import { UsuarioModel } from './../modelos/usuario'
 import { isValidObjectId } from 'mongoose'
 import { title } from 'process'
 
-// const mercadopago = require('mercadopago');
-
 export const crearPreferenciaPago = async (req: express.Request, res: express.Response) => {
   const { payer_email, items } = req.body
 
@@ -26,8 +24,6 @@ export const crearPreferenciaPago = async (req: express.Request, res: express.Re
     auto_return: 'approved', // Redirección automática al aprobar el pago
   }
 
-  // Configurar los headers (incluye tu Access Token de Mercado Pago)
-  // TODO: Ver si usamos el "process.env.MP_ACCESS_TOKEN" o el "Headers" recibido del FRONT
   const headers = {
     'Content-Type': req.headers['content-type'], // 'application/json',
     Authorization: req.headers.authorization, // `Bearer ${process.env.MP_ACCESS_TOKEN}`, // Access Token
@@ -96,8 +92,6 @@ export const pagarPedidoExistenteConMP = async (req: express.Request, res: expre
       auto_return: 'approved',
     }
 
-    // Configurar los headers (incluye tu Access Token de Mercado Pago)
-    // TODO: Ver si usamos el "process.env.MP_ACCESS_TOKEN" o el "Headers" recibido del FRONT
     const headers = {
       'Content-Type': 'application/json', // 'application/json',
       Authorization: 'Bearer APP_USR-3595488656828811-112515-31c2962634f5c18f330f4bb8ead67d88-2116426284', // `Bearer ${process.env.MP_ACCESS_TOKEN}`, // Access Token

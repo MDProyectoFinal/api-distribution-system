@@ -10,15 +10,3 @@ const carroDeComprasSchema = new mongoose.Schema({
 });
 
 export const CarroDeComprasModel = mongoose.model('CarroDeCompras', carroDeComprasSchema);
-
-
-
-// var mongoose = require('mongoose');
-// var Schema = mongoose.Schema;
-
-// var AdministradorSchema = Schema({
-//     nombre_usuario: String,
-//     clave: String 
-// })
-
-// module.exports = mongoose.model('Administrador', AdministradorSchema);

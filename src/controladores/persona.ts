@@ -1,36 +1,17 @@
 'use strict'
 
-//const mongoose = require('mongoose');
 import mongoose from "mongoose";
 import express from 'express'
-// import UsuarioModel from "modelos/usuario";
 import { IPersona } from "../modelos/persona";
-
 import { PersonaModel } from '../modelos/persona';
 import { UsuarioModel } from '../modelos/usuario';
-// var PersonaModel = require('../modelos/persona');
-// var UsuarioModel = require('../modelos/usuario');
-
 import { ErrorPersonalizado } from "../dominio/errors/error.personalizado";
-
-import cloudinary from "../servicios/cloudinary.config";  //"./  servicios/cloudinary.config";
+import cloudinary from "../servicios/cloudinary.config";
 import fs from 'fs'
-
 var jwt = require('../servicios/jwt');
-
 import { Request, Response } from 'express';
-
-// var fs = require('fs');
-// var path = require('path');
 var moment = require('moment');
-
-// var Persona = require('../modelos/persona');
-// var Usuario = require('../modelos/usuario');
-
-// const mongoose = require('mongoose'); // Si estás utilizando require
-
 var { guardarUsuario, actualizarImagen } = require('./usuario');
-// const { params } = require('../app');
 
 function pruebasPersona( req:any, res:any ){
     res.status(200).send({
@@ -105,8 +86,6 @@ async function guardarPersona( req:any, res:any ){
 
         }else{
             throw ErrorPersonalizado.badRequest('Complete todos los campos');
-            // throw new Error('Complete todos los campos'); // Lanzar un error controlado
-            // res.status(200).json( { message: 'Complete todos los campos' });
         }
 
     } catch (error) {
@@ -129,7 +108,6 @@ async function obtenerPersona( req:any, res:any ) : Promise<IPersona|undefined>{
 
     try {
         const personaEncontrada = await PersonaModel.find({ "_id": personaId });
-        // console.log( personaEncontrada );
 
         if( personaEncontrada.length == 0 ){
             res.status(404).send({ message: 'Persona no existe' });
@@ -174,18 +152,13 @@ async function actualizarPersona( req:express.Request, res:express.Response ){
         return res.status(400).json({ error: 'No se proporcionaron datos para actualizar' });
     }
 
-    // Compara los datos guardados del usuario autenticado con el personId enviado. Pepe no puede actualizar datos de Juan
-    // if( personaId != req.usuario.persona ){
-    //     return res.status(500).send({ message: 'No tienes permisos para actualizar este usuario' });
-    // }
-
     try {
         // el new: true, devuelve el usuario actualizado. Si es "false" devuelve el usuario previo a la actualizacion
         const personaActualizada = await PersonaModel.findByIdAndUpdate( personaIdObject.toHexString(), update, { new: true } );
         var imagenAct = null;
 
         if( personaActualizada ){
-            
+
             // Manejar el archivo subido usando Multer
             const imagenPath = req.file?.path;
             if (imagenPath != null && imagenPath != undefined){  //throw ErrorPersonalizado.notFound("No se subió una imagen para actualizar");
@@ -198,25 +171,24 @@ async function actualizarPersona( req:express.Request, res:express.Response ){
 
                 // Obtener la URL de la imagen subida en Cloudinary
                 const imagenUrl = result.secure_url
-                            
+
                 const data = {
                     imagen: imagenUrl,
                     idUsuario: req.body.idUsuario
                 }
 
-                imagenAct = await actualizarImagen(data, res);            
+                imagenAct = await actualizarImagen(data, res);
 
             }
 
             // Probamos ver de actualizar el token para que actualice la imagen arriba en el NAV
-            let usuarioEncontrado = await UsuarioModel.findOne( { _id: update.idUsuario } );          
-            
+            let usuarioEncontrado = await UsuarioModel.findOne( { _id: update.idUsuario } );
+
             return res.status(200).send({
                 token: jwt.createToken( usuarioEncontrado ),
                 user: usuarioEncontrado,
                 personaAct: personaActualizada
-                //imagenAct: imagenAct.imagen
-            })  
+            })
         }else{
             return res.status(404).send({ message: 'No se ha podido encontrar y actualizar la persona'});
         }
