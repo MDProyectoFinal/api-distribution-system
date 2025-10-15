@@ -12,7 +12,7 @@ const cors = require('cors');
 
 // Configurar CORS - VER SI ES NECESARIO
 app.use(cors({
-  origin: 'http://localhost:4200',
+  origin: ['http://localhost:4200','https://localhost:4200'],
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH'],
   allowedHeaders: ['Content-Type', 'Authorization']
 }));
