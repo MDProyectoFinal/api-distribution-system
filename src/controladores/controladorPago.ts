@@ -24,6 +24,9 @@ export const crearPreferenciaPago = async (req: express.Request, res: express.Re
     auto_return: 'approved', // Redirección automática al aprobar el pago
   }
 
+  console.log(preference);
+  
+
   const headers = {
     'Content-Type': req.headers['content-type'], // 'application/json',
     Authorization: req.headers.authorization, // `Bearer ${process.env.MP_ACCESS_TOKEN}`, // Access Token
@@ -179,6 +182,7 @@ export const insertarPedido = async (req: express.Request, res: express.Response
   }
 
   nuevoPedido.items.map((i: ItemPedido) => i.total).forEach((valor: number) => (nuevoPedido.subtotal += valor))
+  nuevoPedido.pagado = true
   await nuevoPedido.save()
 
   return res.status(201).json(nuevoPedido.toObject())
